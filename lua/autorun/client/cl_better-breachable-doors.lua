@@ -2,14 +2,22 @@
 local doorBreachTimes = {}
 local doorHandleDamageTimes = {}
 local doorDamageTimes = {}
+local doorDamageDirections = {}
+local doorHealthPercentages = {}
 
 local handleAnimationDuration = 0.75
 
+local doorDamageAnimationDuration = 0.05
+local doorDamageRattleDistance = 2
+
+local VECTOR_ZERO = Vector( 0, 0, 0 )
 local ANGLE_ZERO = Angle( 0, 0, 0 )
 
-local ease = math.ease.OutElastic
+local ease_outElastic = math.ease.OutElastic
 local lerpAngle = LerpAngle
+local lerpVector = LerpVector
 local math_min = math.min
+local pi = math.pi
 
 net.Receive( "A1_DoorBreach_OnDoorBreached", function()
     local door = net.ReadEntity()
@@ -25,8 +33,11 @@ end )
 
 net.Receive( "A1_DoorBreach_OnDoorDamaged", function()
     local door = net.ReadEntity()
+    local damageDirection = net.ReadInt( 3 )
+    local healthPercent = net.ReadFloat()
 
-    doorDamageTimes[door] = CurTime()
+    doorDamageDirections[door] = damageDirection
+    doorHealthPercentages[door] = healthPercent
 end )
 
 net.Receive( "A1_DoorBreach_OnDoorHandleDamaged", function()
@@ -54,16 +65,42 @@ local function AnimateHandles( time )
 end
 
 local function AnimateDamage( time )
+
+    
     for door, damageTime in pairs( doorDamageTimes ) do
-        local animationProgress = math_min( ( time - damageTime ) / handleAnimationDuration, 1 )
+        ---@cast door Entity
+        ---@cast damageTime number
+        
+        local healthPercent = 1 - doorHealthPercentages[door]
 
-        local damageAngle = lerpAngle( ease( animationProgress ), ANGLE_ZERO, BBD_BROKEN_HANDLE_ANGLE )
+        -- Animation progress from 0 to 1
+        local animationProgress = math_min( ( time - damageTime ) / doorDamageAnimationDuration, 1 )
+        -- Animation progress remapped from -0.25 to 1 and back to -0.25
+        local reboundingProgress = ( 0.5 + math.sin( animationProgress * 2 * pi + pi / 2 ) / 2 ) * 1.25 + 0.25
 
+        ---@type Vector?
+        local doorPosOffset = lerpVector(
+            reboundingProgress,
+            door:GetForward() * doorDamageRattleDistance, -- The door's position offset when the animation is at its peak
+            VECTOR_ZERO                                     -- The door's position offset when the animation is at its start and end
+        )
+        * -doorDamageDirections[door]
+        * healthPercent
+
+        -- If the animation is done
         if animationProgress >= 1 then
             doorDamageTimes[door] = nil
-        end
+            doorDamageDirections[door] = nil
 
-        door:RenderAngles( damageAngle )
+            -- Remove render origin override
+            door:SetRenderOrigin( nil )
+        else
+
+            door:SetRenderOrigin( nil )
+            local pos = door:GetPos()
+
+            door:SetRenderOrigin( pos + doorPosOffset )
+        end
     end
 end
 
