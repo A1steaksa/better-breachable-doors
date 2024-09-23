@@ -35,6 +35,13 @@ net.Receive( "A1_DoorBreach_OnDoorDamaged", function()
     local door = net.ReadEntity()
     local damageDirection = net.ReadInt( 3 )
     local healthPercent = net.ReadFloat()
+    local isHandleDamage = net.ReadBool()
+
+    if isHandleDamage then
+        doorHandleDamageTimes[door] = CurTime()
+    else
+        doorDamageTimes[door] = CurTime()
+    end
 
     doorDamageDirections[door] = damageDirection
     doorHealthPercentages[door] = healthPercent
@@ -46,12 +53,12 @@ net.Receive( "A1_DoorBreach_OnDoorHandleDamaged", function()
     doorHandleDamageTimes[door] = CurTime()
 end )
 
-local function AnimateHandles( time )
+local function AnimateBrokenHandles( time )
     for door, breachTime in pairs( doorBreachTimes ) do
         local animationProgress = math_min( ( time - breachTime ) / handleAnimationDuration, 1 )
 
-        local handleAngle = lerpAngle( ease( animationProgress ), ANGLE_ZERO, BBD_BROKEN_HANDLE_ANGLE )
-        local pushbarAngle = lerpAngle( ease( animationProgress ), ANGLE_ZERO, BBD_BROKEN_PUSHBAR_ANGLE )
+        local handleAngle = lerpAngle( ease_outElastic( animationProgress ), ANGLE_ZERO, BBD_BROKEN_HANDLE_ANGLE )
+        local pushbarAngle = lerpAngle( ease_outElastic( animationProgress ), ANGLE_ZERO, BBD_BROKEN_PUSHBAR_ANGLE )
 
         local handleBone = door:LookupBone( "handle" )
         if handleBone then
@@ -107,6 +114,6 @@ end
 hook.Add( "Think", "A1_DoorBreach_AnimateDoors", function()
     local time = CurTime()
 
-    AnimateHandles( time )
+    AnimateBrokenHandles( time )
     AnimateDamage( time )
 end )
