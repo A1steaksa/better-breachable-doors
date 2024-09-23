@@ -24,8 +24,14 @@ local DOOR_STATE_CLOSING    = 3
 local DOOR_STATE_AJAR       = 4
 
 -- Effects Config
+-- Amount to tilt the door forward when it's been breached
 local brokenDoorTiltAmount = -2.5
+-- Amount to rotate the door open more than normal when it's been breached
 local brokenDoorExtraRotation = 2.5
+
+-- Networking Config
+-- The minimum time between damage events being sent to clients for the same door
+local minDamageDelay = 0.15
 
 -- Sound tables
 local breakSounds = {}
@@ -195,18 +201,33 @@ local function HandleDoorDamage( ent, dmg )
     -- Can't damage a door that's already dead
     if health == 0 then return end
 
-    net.Start( "A1_DoorBreach_OnDoorDamaged" )
-    net.WriteEntity( ent )
-    net.SendPVS( ent:GetPos() )
+    local openDirection = dmg:GetDamageForce():Dot( ent:GetForward() ) > 0 and 1 or -1
 
-    doorLastDamageTimes[ ent ] = CurTime()
+    local time = CurTime()
 
     local healthAfterDamage = math.max( health - dmg:GetDamage(), 0 )
     doorHealthsAfterLastDamage[ ent ] = healthAfterDamage
 
     if healthAfterDamage == 0 then
         HandleDoorDeath( ent, dmg )
+    else
+        -- Don't allow damage to be dealt to the same door too quickly
+        if doorLastDamageTimes[ ent ] and time - doorLastDamageTimes[ ent ] < minDamageDelay then
+            return
+        end
+
+        -- TODO: Handle damage multipliers for shooting near the handle
+        local isHandleDamage = false
+
+        net.Start( "A1_DoorBreach_OnDoorDamaged" )
+        net.WriteEntity( ent )
+        net.WriteInt( openDirection, 3 )
+        net.WriteFloat( health / conVarHealth:GetFloat() )
+        net.WriteBool( isHandleDamage )
+        net.SendPVS( ent:GetPos() )
     end
+
+    doorLastDamageTimes[ ent ] = time
 end
 
 
