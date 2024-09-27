@@ -21,11 +21,6 @@ BBD_BROKEN_PUSHBAR_ANGLE = Angle( -1, 9, 15 )
 
 local ID_PREFIX = "A1_DoorBreach_"
 
--- Net message IDs
-BBD_NET_DOOR_BREACH     = ID_PREFIX .. "OnDoorBreach"
-BBD_NET_DOOR_RESPAWN    = ID_PREFIX .. "OnDoorRespawn"
-BBD_NET_DOOR_DAMAGE     = ID_PREFIX .. "OnDoorDamage"
-
 -- Hook IDs
 BBD_HOOK_SETUP_DATATABLES       = ID_PREFIX .. "SetupDataTables"
 
