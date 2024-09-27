@@ -44,7 +44,8 @@ if CLIENT then
     -- Hook IDs
     BBD_HOOK_ANIMATE_DOORS      = ID_PREFIX .. "AnimateDoors"
     BBD_HOOK_SETUP_CALLBACKS    = ID_PREFIX .. "SetupCallbacks"
-    
+    BBD_HOOK_CHANGE_PVS         = ID_PREFIX .. "ChangePVS"
+
     include( "better-breachable-doors/cl_breach.lua" )
 end
 

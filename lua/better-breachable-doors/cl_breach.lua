@@ -69,11 +69,16 @@ end
 hook.Add( "Think", BBD_HOOK_ANIMATE_DOORS, function()
     local time = CurTime()
 
-    AnimateBrokenHandles( time )
-    AnimateDamage( time )
-end )
+hook.Remove( "NotifyShouldTransmit", BBD_HOOK_CHANGE_PVS )
+hook.Add( "NotifyShouldTransmit", BBD_HOOK_CHANGE_PVS, function( ent, shouldTransmit )
+    if not ent or not IsValid( ent ) then return end
+    if ent:GetClass() ~= "prop_door_rotating" then return end
+    if not shouldTransmit then return end
 
-local function HandleDamageCallback( door, _, _, time )
+    -- As doors enter the PVS, mark them for animation
+    -- If they don't actually need to animate, they will be quickly removed from the list
+    doorsToAnimate[ent] = true
+end )
     doorsToAnimate[door] = true
 end
 
