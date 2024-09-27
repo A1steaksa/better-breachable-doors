@@ -4,16 +4,9 @@ local brokenDoorTiltAmount = -2.5
 -- Amount to rotate the door open more than normal when it's been breached
 local brokenDoorExtraRotation = 2.5
 
--- Networking Config
--- The minimum time between damage events being sent to clients for the same door
-local sendDamageInterval = 0.2
-
--- These tables are indexed by door entities
-local healthAfterLastDamage = {} -- The door's health after the last damage event
-local sendDamageTime        = {} -- The time of the last damage event sent to clients
-local respawnDirection      = {} -- 1 for forward, -1 for backward
-local damageAggregate       = {} -- Total damage dealt since the door's damage was last networked
-local damageDirection       = {} -- Direction the door is being pushed when damaged
+-- Indexed by door entities
+---@type table<Entity, DOOR_DIRECTION>
+local respawnDirection      = {}
 
 local ANGLE_ZERO = Angle( 0, 0, 0 )
 
@@ -61,11 +54,6 @@ end
 ---@param dmg CTakeDamageInfo Damage that killed the door
 local function HandleDoorDeath( door, dmg )
     if not door or not dmg or not IsValid( door ) or not IsValid( dmg ) then return end
-
-    -- Alert clients that the door has been breached
-    net.Start( BBD_NET_DOOR_BREACH )
-    net.WriteEntity( door )
-    net.SendPVS( door:GetPos() )
 
     -- Unlock the door
     if conVarUnlock:GetBool() then

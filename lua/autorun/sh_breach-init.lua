@@ -45,10 +45,6 @@ if SERVER then
     BBD_HOOK_SETUP              = ID_PREFIX .. "Setup"
     BBD_HOOK_SUPPRESS_USE       = ID_PREFIX .. "SuppressUse"
 
-    util.AddNetworkString( BBD_NET_DOOR_BREACH )
-    util.AddNetworkString( BBD_NET_DOOR_RESPAWN )
-    util.AddNetworkString( BBD_NET_DOOR_DAMAGE )
-
     include( "better-breachable-doors/sv_breach.lua" )
 end
 
