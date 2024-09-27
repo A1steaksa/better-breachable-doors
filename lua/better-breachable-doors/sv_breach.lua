@@ -25,24 +25,19 @@ local function HandleDoorRespawn( door )
     door:SetHealthAfterLastDamage( conVarHealth:GetFloat() )
 
     -- Reset the door's rotation to its normal open position
-    local resetRotation
-    if respawnDirection[ door ] == 1 then
-        resetRotation = door:GetInternalVariable( "m_angRotationOpenForward" )
-    else
-        resetRotation = door:GetInternalVariable( "m_angRotationOpenBack" )
-    end
+    local dirName = respawnDirection[ door ] == DOOR_DIRECTION_FORWARD and "m_angRotationOpenForward" or "m_angRotationOpenBack"
+    local resetRotation = door:GetInternalVariable( dirName )
     door:SetAngles( Angle( resetRotation.x, resetRotation.y, resetRotation.z ) )
 
     door:SetLocalAngularVelocity( ANGLE_ZERO )
 
-    -- The door is now open
     door:SetSaveValue( "m_eDoorState", DOOR_STATE_OPEN )
 end
 
--- Called when a door is destroyed.
+-- Called when a door is breached.
 ---@param door Entity Door that died
 ---@param dmg CTakeDamageInfo Damage that killed the door
-local function HandleDoorDeath( door, dmg )
+local function HandleDoorBreach( door, dmg )
     if not door or not dmg or not IsValid( door ) or not IsValid( dmg ) then return end
 
     -- Unlock the door
@@ -62,19 +57,15 @@ local function HandleDoorDeath( door, dmg )
         end
 
         -- Figure out which direction the damage is pushing the door
-        local openDirection = dmg:GetDamageForce():Dot( door:GetForward() ) > 0 and 1 or -1
+        local openDirection = dmg:GetDamageForce():Dot( door:GetForward() ) > 0 and DOOR_DIRECTION_FORWARD or DOOR_DIRECTION_BACKWARD
         respawnDirection[ door ] = openDirection
 
         -- Get the door's normal open angle in the direction it's being pushed
-        local rotationVariableName = openDirection == 1 and "m_angRotationOpenForward" or "m_angRotationOpenBack"
+        local rotationVariableName = openDirection == DOOR_DIRECTION_FORWARD and "m_angRotationOpenForward" or "m_angRotationOpenBack"
         local goalAng = door:GetInternalVariable( rotationVariableName )
 
         -- Modify the normal open angle to make the door look broken after it's opened
-        goalAng = goalAng + Vector(
-            0,
-            brokenDoorExtraRotation * -openDirection,   -- Rotate open more than normal
-            brokenDoorTiltAmount                        -- Tilt forward off its hinges
-        )
+        goalAng = goalAng + Vector( 0,0, brokenDoorTiltAmount )
         door:SetSaveValue( "m_angGoal", goalAng )
 
         -- Changing the speed and goal angle means we need to re-calculate the door's angular velocity and
@@ -125,8 +116,8 @@ local function HandleDoorDamage( ent, dmg )
     ent:SetDamageTime( time )
     ent:SetDamageDirection( damageOpenDirection )
 
-    if newHealth == 0 then
-        HandleDoorDeath( ent, dmg )
+    if newHealth <= 0 then
+        HandleDoorBreach( ent, dmg )
     end
 end
 
@@ -134,6 +125,7 @@ end
 -- Development hotloading
 hook.Remove( "Think", BBD_HOOK_SEND_DAMAGE )
 hook.Remove( "EntityTakeDamage", BBD_HOOK_DAMAGE_DETECTION )
+hook.Remove( "InitPostEntity", BBD_HOOK_SETUP )
 hook.Add( "EntityTakeDamage", BBD_HOOK_DAMAGE_DETECTION, HandleDoorDamage )
 
 
@@ -153,7 +145,7 @@ hook.Add( "PlayerUse", BBD_HOOK_SUPPRESS_USE, function( ply, ent )
     if ent:GetHealthAfterLastDamage() == 0 then
         return false
     end
-end)
+end )
 
 
 -- Ensure damage hooks are only active while the system is enabled
@@ -167,7 +159,7 @@ cvars.AddChangeCallback( conVarEnabled:GetName(), function( _, oldValue, newValu
 end )
 
 
--- Update door health when the convar changes
+-- Update door health when the door health convar changes
 cvars.AddChangeCallback( conVarHealth:GetName(), function( _, oldMaxHealth, newMaxHealth )
     for _, door in pairs( ents.FindByClass( "prop_door_rotating" ) ) do
         if not IsValid( door ) then continue end
