@@ -33,16 +33,6 @@ local function HandleDoorRespawn( door )
     end
     door:SetAngles( Angle( resetRotation.x, resetRotation.y, resetRotation.z ) )
 
-    -- Reset the door's handle and pushbar angles
-    local handleBone = door:LookupBone( "handle" )
-    if handleBone then
-        door:ManipulateBoneAngles( handleBone, ANGLE_ZERO )
-    end
-    local pushbarBone = door:LookupBone( "handle02" )
-    if pushbarBone then
-        door:ManipulateBoneAngles( pushbarBone, ANGLE_ZERO )
-    end
-
     door:SetLocalAngularVelocity( ANGLE_ZERO )
 
     -- The door is now open
@@ -104,18 +94,6 @@ local function HandleDoorDeath( door, dmg )
 
         -- Set the door's state to be opening
         door:SetSaveValue( "m_eDoorState", DOOR_STATE_OPENING )
-
-        -- Make the handle and pushbar look broken
-        -- Set serverside so that it networks to clients entering PVS
-        local handleBone = door:LookupBone( "handle" )
-        if handleBone then
-            door:ManipulateBoneAngles( handleBone, BBD_BROKEN_HANDLE_ANGLE )
-        end
-        local pushbarBone = door:LookupBone( "handle02" )
-        if pushbarBone then
-            door:ManipulateBoneAngles( pushbarBone, BBD_BROKEN_PUSHBAR_ANGLE )
-        end
-
     end
 
     timer.Simple( conVarRespawnTime:GetFloat(), function()

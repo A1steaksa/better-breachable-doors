@@ -16,9 +16,6 @@ DOOR_STATE_OPEN       = 2
 DOOR_STATE_CLOSING    = 3
 DOOR_STATE_AJAR       = 4
 
-BBD_BROKEN_HANDLE_ANGLE = Angle( 10, 79, 15 )
-BBD_BROKEN_PUSHBAR_ANGLE = Angle( -1, 9, 15 )
-
 local ID_PREFIX = "A1_DoorBreach_"
 
 -- Hook IDs
