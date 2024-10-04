@@ -70,12 +70,14 @@ hook.Add( "OnEntityCreated", BBD_HOOK_SETUP_DATATABLES, function( ent )
     ent:InstallDataTable()
 
     ent:NetworkVar( "Float", "DamageTime" )
+    ent:NetworkVar( "Boolean", "IsHandleDamage" )
     ent:NetworkVar( "Int", "DamageDirection" )
     ent:NetworkVar( "Float", "HealthAfterLastDamage" )
 
     if SERVER then
         local startingHealth = GetConVar( "doorbreach_health" ):GetFloat()
         ent:SetHealthAfterLastDamage( startingHealth )
+        ent:SetDamageTime( -1 )
     end
 
     if CLIENT then
