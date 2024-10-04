@@ -36,12 +36,13 @@ local ID_PREFIX = "A1_DoorBreach_"
 -- Hook IDs
 BBD_HOOK_SETUP_DATATABLES       = ID_PREFIX .. "SetupDataTables"
 
-CreateConVar( "doorbreach_enabled",       "1",    {FCVAR_ARCHIVE,FCVAR_REPLICATED}, "Enable or disable the door breach system.", 0, 1 )
-CreateConVar( "doorbreach_health",        "100",  {FCVAR_ARCHIVE,FCVAR_REPLICATED}, "Starting health for doors.", 1 )
-CreateConVar( "doorbreach_unlock",        "1",    {FCVAR_ARCHIVE,FCVAR_REPLICATED}, "Enable or disable locked doors becoming unlocked when breached.", 0, 1 )
-CreateConVar( "doorbreach_open",          "1",    {FCVAR_ARCHIVE,FCVAR_REPLICATED}, "Enable or disable doors opening when breached.", 0, 1 )
-CreateConVar( "doorbreach_speed",         "500",  {FCVAR_ARCHIVE,FCVAR_REPLICATED}, "Speed, in degrees per second, at which doors open when breached.", 0 )
-CreateConVar( "doorbreach_respawntime",   "30",   {FCVAR_ARCHIVE,FCVAR_REPLICATED}, "Time, in seconds, before the prop door is removed.", 0 )
+CreateConVar( "doorbreach_enabled",         "1",    {FCVAR_ARCHIVE,FCVAR_REPLICATED}, "Enable or disable the door breach system.", 0, 1 )
+CreateConVar( "doorbreach_health",          "100",  {FCVAR_ARCHIVE,FCVAR_REPLICATED}, "Starting health for doors.", 1 )
+CreateConVar( "doorbreach_unlock",          "1",    {FCVAR_ARCHIVE,FCVAR_REPLICATED}, "Enable or disable locked doors becoming unlocked when breached.", 0, 1 )
+CreateConVar( "doorbreach_open",            "1",    {FCVAR_ARCHIVE,FCVAR_REPLICATED}, "Enable or disable doors opening when breached.", 0, 1 )
+CreateConVar( "doorbreach_speed",           "500",  {FCVAR_ARCHIVE,FCVAR_REPLICATED}, "Speed, in degrees per second, at which doors open when breached by bullets or impacts.", 0 )
+CreateConVar( "doorbreach_explosive_speed", "1000", {FCVAR_ARCHIVE,FCVAR_REPLICATED}, "Speed, in degrees per second, at which doors open when breached by explosives.", 0 )
+CreateConVar( "doorbreach_respawntime",     "30",   {FCVAR_ARCHIVE,FCVAR_REPLICATED}, "Time, in seconds, before the prop door is removed.", 0 )
 
 if SERVER then
     AddCSLuaFile( "better-breachable-doors/cl_breach.lua" )
