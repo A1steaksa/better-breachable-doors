@@ -1,4 +1,3 @@
-local doorsToAnimate = {}
 local previousDoorHealths = {}
 
 local handleDamageAnimationDuration = 0.75
@@ -135,6 +134,15 @@ local function UpdateAnimationState( door, time )
     local damageTime = door:GetDamageTime()
     local timeSinceDamage = time - damageTime
 
+    -- If the door hasn't taken damage, don't animate it
+    if damageTime <= 0 then
+        door.RenderOverride = nil
+        return
+    end
+
+    -- Negative time means CurTime() is behind the server's time
+    if timeSinceDamage < 0 then return end
+
     local doorTookDamage = healthDelta < 0
     if doorTookDamage then
         -- Door damage animation
@@ -172,27 +180,28 @@ local function UpdateAnimationState( door, time )
     end
 
     -- If we had nothing to animate on this door, it is done animating
-    if not isStillAnimating then doorsToAnimate[door] = nil end
+    if not isStillAnimating then
+        door.RenderOverride = nil
+    end
 end
 
-hook.Remove( "Think", BBD_HOOK_ANIMATE_DOORS )
-hook.Add( "Think", BBD_HOOK_ANIMATE_DOORS, function()
-    local time = CurTime()
-
-    for door, _ in pairs( doorsToAnimate ) do
-        UpdateAnimationState( door, time )
-    end
-end )
+-- Used as a RenderOverride for doors that need to animate
+---@param self Entity
+---@param flags STUDIO
+local function DoorAnimationRenderOverride( self, flags )
+    UpdateAnimationState( self, CurTime() )
+    self:DrawModel( flags )
+end
 
 hook.Remove( "NotifyShouldTransmit", BBD_HOOK_CHANGE_PVS )
-hook.Add( "NotifyShouldTransmit", BBD_HOOK_CHANGE_PVS, function( ent, shouldTransmit )
-    if not ent or not IsValid( ent ) then return end
-    if ent:GetClass() ~= "prop_door_rotating" then return end
+hook.Add( "NotifyShouldTransmit", BBD_HOOK_CHANGE_PVS, function( door, shouldTransmit )
+    if not door or not IsValid( door ) then return end
+    if door:GetClass() ~= "prop_door_rotating" then return end
     if not shouldTransmit then return end
 
     -- As doors enter the PVS, mark them for animation
     -- If they don't actually need to animate, they will be quickly removed from the list
-    doorsToAnimate[ent] = true
+    door.RenderOverride = DoorAnimationRenderOverride
 end )
 
 -- Called when a door's health changes
@@ -202,7 +211,16 @@ end )
 ---@param newHealth number The door's health after the change
 local function HealthChangedCallback( door, name, oldHealth, newHealth )
     previousDoorHealths[door] = oldHealth
-    doorsToAnimate[door] = true
+    door.RenderOverride = DoorAnimationRenderOverride
+end
+
+-- Called when a door's damage time changes
+---@param door Entity The door that changed damage time
+---@param name string The name of the networked variable that changed
+---@param oldTime number The door's damage time before the change
+---@param serverTime number The door's damage time after the change
+local function DamageTimeChangedCallback( door, name, oldTime, serverTime )
+    door.RenderOverride = DoorAnimationRenderOverride
 end
 
 hook.Remove( "PostDoorCreated", BBD_HOOK_SETUP_CALLBACKS )
