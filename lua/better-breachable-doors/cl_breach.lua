@@ -4,7 +4,7 @@ local handleDamageAnimationDuration = 0.75
 local handleBreachAnimationDuration = 2
 local handleRespawnAnimationDuration = 1
 
-local doorDamageAnimationDuration = 2
+local doorDamageAnimationDuration = 0.1
 local doorBreachAnimationDuration = 0.5
 local doorRespawnAnimationDuration = 0.5
 
@@ -12,18 +12,12 @@ local ANGLE_ZERO = Angle( 0, 0, 0 )
 
 local ease_outElastic = math.ease.OutElastic
 local lerpAngle = LerpAngle
-local lerpVector = LerpVector
 local math_min = math.min
-local pi = math.pi
 
-local conVarEnabled         = GetConVar( "doorbreach_enabled" )
 local conVarHealth          = GetConVar( "doorbreach_health" )
-local conVarUnlock          = GetConVar( "doorbreach_unlock" )
-local conVarOpen            = GetConVar( "doorbreach_open" )
-local conVarOpenSpeed       = GetConVar( "doorbreach_speed" )
 local conVarRespawnTime     = GetConVar( "doorbreach_respawntime" )
 
-local breachedHandleAngle   = Angle( 10, 79, 15 )
+local breachedHandleAngle   = Angle( 0, 79, 10 )
 local breachedPushbarAngle  = Angle( -1, 9, 15 )
 local breachedDoorAngle     = Angle( 1.5, 0, -1.5 )
 local damagedDoorAngle      = Angle( 0, 1, 0 )
@@ -79,16 +73,18 @@ end
 ---@param door Entity
 ---@param animationProgress number
 local function AnimateDamagingDoor( door, animationProgress )
-    animationProgress = math_min( animationProgress, 1 )
-
-    animationProgress = math.abs( animationProgress - 1 / 2 )
-
-    print( animationProgress )
+    -- Animation progress is mirrored so the door pushes away from damage then returns
+    local adjustedProgress = math.abs( math_min( animationProgress, 1 ) - 0.5 ) * -2 + 1
 
     door:SetRenderAngles( nil )
 
     if animationProgress < 1 then
-        local doorAngleOffset = lerpAngle( math.ease.OutElastic( animationProgress ), ANGLE_ZERO, damagedDoorAngle )
+
+        local intensity = 1 - door:GetHealthAfterLastDamage() / conVarHealth:GetFloat()
+
+        local intensity = math.pow( intensity, 2 )
+
+        local doorAngleOffset = lerpAngle( ease_outElastic( adjustedProgress ), ANGLE_ZERO, -door:GetDamageDirection() * damagedDoorAngle * intensity )
         door:SetRenderAngles( door:GetAngles() + doorAngleOffset )
     end
 end
@@ -226,11 +222,13 @@ end
 hook.Remove( "PostDoorCreated", BBD_HOOK_SETUP_CALLBACKS )
 hook.Add( "PostDoorCreated", BBD_HOOK_SETUP_CALLBACKS, function( door )
     door:NetworkVarNotify( "HealthAfterLastDamage", HealthChangedCallback )
+    door:NetworkVarNotify( "DamageTime", DamageTimeChangedCallback )
 end )
 
 local function SetupNotifications()
     for _, door in ipairs( ents.FindByClass( "prop_door_rotating" ) ) do
         door:NetworkVarNotify( "HealthAfterLastDamage", HealthChangedCallback )
+        door:NetworkVarNotify( "DamageTime", DamageTimeChangedCallback )
     end
 end
 SetupNotifications()
