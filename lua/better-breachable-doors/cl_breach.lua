@@ -141,7 +141,7 @@ BBD.AnimateDamagedDoor = function( door, animationProgress )
         -- Squaring the intensity makes the animation more exaggerated as the door gets closer to death
         local intensity = math.pow( intensity, 2 )
 
-        local doorAngleOffset = lerpAngle( ease_outElastic( adjustedProgress ), ANGLE_ZERO, -door:GetDamageDirection() * damagedDoorAngle * intensity )
+        local doorAngleOffset = lerpAngle( ease_outElastic( adjustedProgress ), ANGLE_ZERO, door:GetDamageDirection() * damagedDoorAngle * intensity )
         door:SetRenderAngles( door:GetAngles() + doorAngleOffset )
     end
 end
