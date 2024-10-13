@@ -303,7 +303,8 @@ end
 
 -- Called when a door is respawned.
 ---@param door Entity Door that respawned
-BBD.RespawnDoor = function( door )
+---@param isPropBreach boolean Whether or not the door was prop breached
+BBD.RespawnDoor = function( door, isPropBreach )
     if not IsValid( door ) then return end
 
     -- Reset the door's rotation to its normal open position
@@ -318,6 +319,10 @@ BBD.RespawnDoor = function( door )
         door:SetAngles( resetAngle )
     end
 
+    -- Reset the door's solidity to whatever it was before it was breached
+    door:SetSolid( BBD.PreBreachSolidity[ door ] )
+    BBD.PreBreachSolidity[ door ] = nil
+
     -- Make sure the door isn't still trying to move
     door:SetLocalAngularVelocity( ANGLE_ZERO )
 
@@ -327,24 +332,26 @@ BBD.RespawnDoor = function( door )
     -- Reset the door's health to the max health
     door:SetHealthAfterLastDamage( conVarHealth:GetFloat() )
 
-    -- Remove the corresponding prop door if it exists
-    local propDoor = door:GetPropDoor()
-    if IsValid( propDoor ) then
-        local playersBlockingRespawn = BBD.GetCollidingPlayers( door )
-        -- If a player is standing in the door's space, don't make it solid yet
-        if #playersBlockingRespawn > 0 then
+    if isPropBreach then
+        local propDoor = door:GetPropDoor()
+        if IsValid( propDoor ) then
+            propDoor:Remove()
+        end
+
+        if #BBD.GetCollidingPlayers( door ) > 0 then
+            -- Make the door non-solid to avoid trapping the player
             door:SetCollisionGroup( COLLISION_GROUP_PASSABLE_DOOR )
             door:SetIsPropBreachDoorRespawning( true )
+
+            -- Start checking to see if the player leaves the door's space
             BBD.NonSolidDoors[ door ] = true
         else
             door:SetCollisionGroup( COLLISION_GROUP_NONE )
+            BBD.PlayRespawnSound( door )
         end
-
-        propDoor:Remove()
+    else
+        BBD.PlayRespawnSound( door )
     end
-
-    door:SetSolid( BBD.PreBreachSolidity[ door ] )
-    BBD.PreBreachSolidity[ door ] = nil
 end
 
 --#endregion Door Respawn Logic
@@ -487,8 +494,10 @@ BBD.OnDoorBreached = function( door, dmg )
 
     BBD.PreBreachSolidity[ door ] = door:GetSolid()
 
+    local isPropBreach = conVarBreakHinges:GetBool()
+
     -- Spawn a prop door amd hide the original door (Prop-Breach)
-    if conVarBreakHinges:GetBool() then
+    if isPropBreach then
 
         BBD.PropBreachDoor( door, dmg )
 
@@ -510,11 +519,11 @@ BBD.OnDoorBreached = function( door, dmg )
 
     -- Door respawn timer
     timer.Simple( conVarRespawnTime:GetFloat(), function()
-        BBD.RespawnDoor( door )
+        BBD.RespawnDoor( door, isPropBreach )
 
         if BBD.DoorHasConnections( door ) then
             for _, connectedDoor in pairs( connectedDoors ) do
-                BBD.RespawnDoor( connectedDoor )
+                BBD.RespawnDoor( connectedDoor, isPropBreach )
             end
         end
     end )
