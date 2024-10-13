@@ -255,8 +255,6 @@ BBD.DoorRenderOverride = function( self, flags )
     local isAnimating = BBD.UpdateAnimationState( self, CurTime() )
     local isRespawning = self:GetIsPropBreachDoorRespawning()
 
-    print( "is animating?", isAnimating, "is respawning?", isRespawning )
-
     -- Respawning doors are drawn to be partially transparent
     if isRespawning then
         -- Write to the depth buffer, but not the color buffer
@@ -288,8 +286,6 @@ end
 ---@param newHealth number The door's health after the change
 BBD.HealthChangedCallback = function( door, name, oldHealth, newHealth )
     BBD.PreviousDoorHealth[door] = oldHealth
-
-    door.RenderOverride = BBD.DoorRenderOverride
 end
 
 

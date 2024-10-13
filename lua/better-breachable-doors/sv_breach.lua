@@ -480,13 +480,14 @@ BBD.OnDoorBreached = function( door, dmg )
 
     -- Set up connected doors to be breached
     if BBD.DoorHasConnections( door ) then
+        local time = CurTime()
         for _, connectedDoor in pairs( connectedDoors ) do
             if not IsValid( connectedDoor ) then continue end
 
             connectedDoor:SetIsHandleDamage( false )
             connectedDoor:SetHealthAfterLastDamage( 0 )
             connectedDoor:SetDamageDirection( BBD.GetDoorOpenDirection( connectedDoor, dmg ) )
-            connectedDoor:SetDamageTime( CurTime() )
+            connectedDoor:SetDamageTime( time )
 
             BBD.PreBreachSolidity[ connectedDoor ] = connectedDoor:GetSolid()
         end
@@ -611,7 +612,6 @@ BBD.OnDoorDamaged = function( door, dmg )
 
             -- Apparently the bone position can be the entity's position if the bone cache is empty
             if handlePos == door:GetPos() then
-                print( "BBD: Bone cache invalid, using bone matrix workaround." )
                 handlePos = door:GetBoneMatrix( handleBone ):GetTranslation()
             end
 
@@ -630,10 +630,10 @@ BBD.OnDoorDamaged = function( door, dmg )
     -- Apply damage
     local healthAfterDamage = healthWithRegen - damageToTake
 
-    -- Update the door's values with the new ones
+    -- Update the door's Data Table Network Variables
     door:SetIsHandleDamage( isHandleDamage )
     door:SetHealthAfterLastDamage( healthAfterDamage )
-    door:SetDamageTime( CurTime() )
+    door:SetDamageTime( time )
     door:SetDamageDirection( BBD.GetDoorOpenDirection( door, dmg ) )
 
     if healthAfterDamage <= 0 then
@@ -652,9 +652,10 @@ BBD.UpdateMaxHealths = function( _, oldMaxHealth, newMaxHealth )
         local oldHealth = door:GetHealthAfterLastDamage()
         local wasMaxHealth = oldHealth == tonumber( oldMaxHealth )
 
+        -- Purely for variable name clarity
         local newHealth = oldHealth
 
-        -- If we were at max health before, keep us at max health
+        -- Keep full-health doors at full health
         if wasMaxHealth then
             newHealth = newMaxHealth
         end
