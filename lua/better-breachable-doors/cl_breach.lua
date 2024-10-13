@@ -373,4 +373,4 @@ cvars.AddChangeCallback( conVarEnabled:GetName(), function( _, oldValue, newValu
     if newValue == "1" then BBD.Enable() else BBD.Disable() end
 end )
 
-if hotloaded then print( "Hotloading BBD" ) BBD.Enable() end
+if hotloaded then BBD.Enable() end
