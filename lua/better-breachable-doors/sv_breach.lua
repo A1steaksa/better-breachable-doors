@@ -574,24 +574,24 @@ BBD.OnDoorDamaged = function( door, dmg )
     -- Don't damage doors that haven't yet become solid
     if door:GetIsPropBreachDoorRespawning() then return end
 
-    -- Get the current (old) values for the door
-    local oldHealth = door:GetHealthAfterLastDamage()
-    if oldHealth <= 0 then return end
-
-    -- Double doors don't take damage when open
+    -- Double doors
     if BBD.DoorHasConnections( door ) then
+        -- Double doors don't take damage when open
         local doorState = door:GetInternalVariable( "m_eDoorState" )
         if doorState == DOOR_STATE_OPEN then
             return
         end
+
+        -- Double doors don't take damage when any connected door is non-solid
+        for _, otherDoor in pairs( BBD.GetConnectedDoors( door ) ) do
+            if otherDoor:GetIsPropBreachDoorRespawning() then return end
+        end
     end
 
-    local damageToTake = dmg:GetDamage()
     local damgePos = dmg:GetDamagePosition()
 
-    local isHandleDamage = false
-
     -- Apply the handle damage multiplier
+    local isHandleDamage = false
     local isBaseGameDoor = door:GetBodygroupCount( 1 ) == 3 and door:GetBodygroupName( 1 ) == "handle01" -- Probably a better way to do this
     if isBaseGameDoor then
         local activeHandleSubModelId = door:GetBodygroup( 1 )
@@ -623,9 +623,16 @@ BBD.OnDoorDamaged = function( door, dmg )
         end
     end
 
+    local time = CurTime()
+
     -- Apply health regeneration
-    local secondsOfHealthRegen = CurTime() - ( door:GetDamageTime() + conVarHealthRegenDelay:GetFloat() )
-    local healthWithRegen = math.min( oldHealth + ( conVarHealthRegenRate:GetFloat() * secondsOfHealthRegen ), conVarHealth:GetFloat() )
+    local regenStartTime = door:GetDamageTime() + conVarHealthRegenDelay:GetFloat()
+    local secondsSinceRegenStart = time - regenStartTime
+    local healthWithRegen = oldHealth
+    if secondsSinceRegenStart > 0 then
+        local healthToRegen = conVarHealthRegenRate:GetFloat() * secondsSinceRegenStart
+        healthWithRegen = math.min( oldHealth + healthToRegen, conVarHealth:GetFloat() )
+    end
 
     -- Apply damage
     local healthAfterDamage = healthWithRegen - damageToTake
