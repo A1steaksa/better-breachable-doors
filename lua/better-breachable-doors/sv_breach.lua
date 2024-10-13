@@ -501,7 +501,6 @@ BBD.OnDoorBreached = function( door, dmg )
 
     -- Spawn a prop door amd hide the original door (Prop-Breach)
     if isPropBreach then
-
         BBD.PropBreachDoor( door, dmg )
 
         if BBD.DoorHasConnections( door ) then
