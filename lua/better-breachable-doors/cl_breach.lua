@@ -194,7 +194,8 @@ BBD.UpdateAnimationState = function( door, time )
     local timeSinceDamage = time - damageTime
 
     -- Negative time means CurTime() is behind the server's time
-    if timeSinceDamage < 0 then return end
+    -- In this case, don't stop animating the door, but don't animate it either
+    if timeSinceDamage < 0 then return true end
 
     -- If the door hasn't taken damage recently, don't animate it
     if damageTime <= 0 or timeSinceDamage > 30 then
@@ -253,6 +254,8 @@ end
 BBD.DoorRenderOverride = function( self, flags )
     local isAnimating = BBD.UpdateAnimationState( self, CurTime() )
     local isRespawning = self:GetIsPropBreachDoorRespawning()
+
+    print( "is animating?", isAnimating, "is respawning?", isRespawning )
 
     -- Respawning doors are drawn to be partially transparent
     if isRespawning then
