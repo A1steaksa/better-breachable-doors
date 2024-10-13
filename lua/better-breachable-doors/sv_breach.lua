@@ -352,6 +352,8 @@ BBD.RespawnDoor = function( door, isPropBreach )
     else
         BBD.PlayRespawnSound( door )
     end
+
+    door:NextThink( CurTime() )
 end
 
 --#endregion Door Respawn Logic
