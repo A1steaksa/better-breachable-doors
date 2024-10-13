@@ -39,7 +39,7 @@ local conVarRespawnTime         = GetConVar( "doorbreach_respawntime" )
 
 BBD.PlayDamageSound = function( door )
 
-    local soundPos = door:GetPos() + door:OBBCenter()
+    local soundPos = door:GetPos() - door:OBBCenter()
 
     local closenessToBreach = 1 - door:GetHealthAfterLastDamage() / conVarHealth:GetFloat()
 
@@ -65,7 +65,7 @@ BBD.PlayDamageSound = function( door )
 end
 
 BBD.PlayRespawnSound = function( door )
-    local soundPos = door:GetPos() + door:OBBCenter()
+    local soundPos = door:GetPos() - door:OBBCenter()
 
     -- Metalic latch catching
     EmitSound( "plats/hall_elev_door.wav", soundPos, nil, CHAN_AUTO, 1, 66 )
@@ -75,7 +75,7 @@ BBD.PlayRespawnSound = function( door )
 end
 
 BBD.PlayBreachSound = function( door )
-    local soundPos = door:GetPos() + door:OBBCenter()
+    local soundPos = door:GetPos() - door:OBBCenter()
 
     -- Forceful and bassy metallic impact
     EmitSound( "doors/vent_open1.wav", soundPos, nil, CHAN_AUTO, 0.75, 80, 0, 75 )
