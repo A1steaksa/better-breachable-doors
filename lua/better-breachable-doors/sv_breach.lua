@@ -696,13 +696,6 @@ BBD.OnDoorUsed = function( ply, door )
     end
 end
 
--- For development
-hook.Add( "PlayerSpawn", "A1_DoorBreach_SpawnMove", function( player, _ )
-    if game.GetMap() == "raidz_lobby" then
-        player:SetPos( Vector( -5930,-8101, 64.5 ) )
-    end
-end )
-
 local hotloaded = false
 if BBD.Enable then hotloaded = true BBD.Disable() end
 
