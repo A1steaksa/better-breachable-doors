@@ -315,15 +315,18 @@ BBD.RespawnDoor = function( door )
         local playersBlockingRespawn = BBD.GetCollidingPlayers( door )
         -- If a player is standing in the door's space, don't make it solid yet
         if #playersBlockingRespawn > 0 then
+            door:SetCollisionGroup( COLLISION_GROUP_PASSABLE_DOOR )
             door:SetIsPropBreachDoorRespawning( true )
             BBD.NonSolidDoors[ door ] = true
+        else
+            door:SetCollisionGroup( COLLISION_GROUP_NONE )
         end
 
         propDoor:Remove()
     end
 
     door:SetSolid( BBD.PreBreachSolidity[ door ] )
-    door:SetCollisionGroup( COLLISION_GROUP_PASSABLE_DOOR )
+
     BBD.PreBreachSolidity[ door ] = nil
 
     -- Reset the door's rotation to its normal open position
