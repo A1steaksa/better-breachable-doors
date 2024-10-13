@@ -63,7 +63,6 @@ BBD.PlayDamageSound = function( door )
         -- High, sharp slicing sound
         EmitSound( "physics/metal/metal_solid_impact_bullet4.wav", soundPos, nil, CHAN_AUTO, 1, 80, 0, pitch )
     end
-
 end
 
 BBD.PlayRespawnSound = function( door )
@@ -141,6 +140,8 @@ end
 --#region AngularMove Port
 
 -- Based on `CBaseEntity::GetMoveDoneTime`
+---@param ent Entity Entity to get the move done time for
+---@return number # The time, in seconds, it will take to move the door or -1 if an error occurred
 local function GetMoveDoneTime( ent )
     local moveDoneTime = ent:GetInternalVariable( "m_flMoveDoneTime" )
     return moveDoneTime >= 0 and moveDoneTime - ent:GetInternalVariable( "ltime" ) or -1
@@ -148,6 +149,7 @@ end
 
 -- Based on `CBaseEntity::WillSimulateGamePhysics`
 ---@param ent Entity Entity to check
+---@return boolean # Whether or not the entity will simulate game physics
 local function WillSimulateGamePhysics( ent )
     if not ent:IsPlayer() then
         local moveType = ent:GetMoveType()
@@ -207,7 +209,7 @@ end
 ---@param ent Entity Door to move
 ---@param goalAng Angle|Vector Angle to move the door to
 ---@param speed number Speed at which to move the door
----@return number # The time, in seconds, it will take to move the door
+---@return number? # The time, in seconds, it will take to move the door or nil if an error occurred
 local function AngularMove( ent, goalAng, speed )
     if not IsValid( ent ) then return end
     if not goalAng or not speed then return end
@@ -248,6 +250,7 @@ end
 
 -- Determines if any Players are standing with any respawning door's space.
 ---@param door Entity Door to check for colliding players
+---@return table<Entity> # All players colliding with the door
 BBD.GetCollidingPlayers = function( door )
 
     local mdl = door:GetModel()
@@ -280,6 +283,7 @@ end
 -- Called regularly to check if any player is colliding with any door that is respawning.
 BBD.CheckPlayerCollisions = function()
     local time = CurTime()
+
     -- Don't check too often
     if BBD.LastCollisionCheckTime > 0 and time - BBD.LastCollisionCheckTime < BBD.CollisionCheckInterval then return end
     BBD.LastCollisionCheckTime = time
