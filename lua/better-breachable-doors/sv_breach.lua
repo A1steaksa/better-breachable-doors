@@ -304,6 +304,22 @@ end
 BBD.RespawnDoor = function( door )
     if not IsValid( door ) then return end
 
+    -- Reset the door's rotation to its normal open position
+    local dirName = door:GetDamageDirection() == DOOR_DIRECTION_FORWARD and "m_angRotationOpenForward" or "m_angRotationOpenBack"
+    local resetRotation = door:GetInternalVariable( dirName )
+    local resetAngle = Angle( resetRotation.x, resetRotation.y, resetRotation.z )
+    if not IsValid( door:GetParent() ) then
+        -- DarkRP overrides ENT:SetAngle, so we use ENT:SetLocalAngles instead if the door doesn't have a parent
+        -- Hopefully they don't decide to override that too in the future...
+        door:SetLocalAngles( resetAngle )
+    else
+        door:SetAngles( resetAngle )
+    end
+
+    -- Make sure the door isn't still trying to move
+    door:SetLocalAngularVelocity( ANGLE_ZERO )
+
+    -- Don't retain bullet holes and such when respawning
     door:RemoveAllDecals()
 
     -- Reset the door's health to the max health
@@ -326,16 +342,7 @@ BBD.RespawnDoor = function( door )
     end
 
     door:SetSolid( BBD.PreBreachSolidity[ door ] )
-
     BBD.PreBreachSolidity[ door ] = nil
-
-    -- Reset the door's rotation to its normal open position
-    local dirName = door:GetDamageDirection() == DOOR_DIRECTION_FORWARD and "m_angRotationOpenForward" or "m_angRotationOpenBack"
-    local resetRotation = door:GetInternalVariable( dirName )
-    door:SetAngles( Angle( resetRotation.x, resetRotation.y, resetRotation.z ) )
-
-    -- Make sure the door isn't still trying to move
-    door:SetLocalAngularVelocity( ANGLE_ZERO )
 end
 
 --#endregion Door Respawn Logic
