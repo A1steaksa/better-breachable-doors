@@ -34,6 +34,8 @@ local conVarHandleMultiplier    = GetConVar( "doorbreach_handle_multiplier" )
 local conVarOpenSpeed           = GetConVar( "doorbreach_speed" )
 local conVarExplosiveSpeed      = GetConVar( "doorbreach_explosive_speed" )
 local conVarRespawnTime         = GetConVar( "doorbreach_respawntime" )
+local conVarDamageMin           = GetConVar( "doorbreach_damage_min" )
+local conVarDamageMax           = GetConVar( "doorbreach_damage_max" )
 
 --#region Sound Functions
 
@@ -542,6 +544,22 @@ end
 BBD.OnDoorDamaged = function( door, dmg )
     if not door or not IsValid( door ) then return end
     if door:GetClass() ~= "prop_door_rotating" then return end
+
+    local damageToTake = dmg:GetDamage()
+
+    -- Ignore damage below the threshold
+    if damageToTake < conVarDamageMin:GetFloat() then return end
+
+    -- Cap damage at the maximum threshold
+    local maxDamage = conVarDamageMax:GetFloat()
+    if maxDamage > 0 then
+        damageToTake = math.min( damageToTake, maxDamage )
+    end
+
+    local oldHealth = door:GetHealthAfterLastDamage()
+
+    -- Don't damage doors that are already breached
+    if oldHealth <= 0 then return end
 
     -- Don't damage doors that haven't yet become solid
     if door:GetIsPropBreachDoorRespawning() then return end

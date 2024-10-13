@@ -55,6 +55,8 @@ CreateConVar( "doorbreach_handle_multiplier",   "1.5",  {FCVAR_ARCHIVE,FCVAR_REP
 CreateConVar( "doorbreach_speed",               "500",  {FCVAR_ARCHIVE,FCVAR_REPLICATED}, "Speed, in degrees per second, at which doors open when breached by bullets or impacts.", 0 )
 CreateConVar( "doorbreach_explosive_speed",     "1000", {FCVAR_ARCHIVE,FCVAR_REPLICATED}, "Speed, in degrees per second, at which doors open when breached by explosives.", 0 )
 CreateConVar( "doorbreach_respawntime",         "30",   {FCVAR_ARCHIVE,FCVAR_REPLICATED}, "Time, in seconds, before the prop door is removed.", 0 )
+CreateConVar( "doorbreach_damage_min",          "0",   {FCVAR_ARCHIVE,FCVAR_REPLICATED}, "Any damage dealt below this amount will be ignored. Set to 0 to disable.", 0 )
+CreateConVar( "doorbreach_damage_max",          "0",  {FCVAR_ARCHIVE,FCVAR_REPLICATED}, "All damage dealt will be capped at this maximum amount.  Set to 0 to disable.", 0 )
 
 local ID_PREFIX = "A1_DoorBreach_"
 
