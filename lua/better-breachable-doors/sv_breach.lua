@@ -24,18 +24,18 @@ BBD.CollisionCheckInterval = 0.5
 local ANGLE_ZERO = Angle( 0, 0, 0 )
 
 -- ConVars
-local conVarEnabled             = GetConVar( "doorbreach_enabled" )
-local conVarHealth              = GetConVar( "doorbreach_health" )
-local conVarHealthRegenDelay    = GetConVar( "doorbreach_health_regen_delay" )
-local conVarHealthRegenRate     = GetConVar( "doorbreach_health_regen_rate" )
-local conVarUnlock              = GetConVar( "doorbreach_unlock" )
-local conVarBreakHinges         = GetConVar( "doorbreach_break_hinges" )
-local conVarHandleMultiplier    = GetConVar( "doorbreach_handle_multiplier" )
-local conVarOpenSpeed           = GetConVar( "doorbreach_speed" )
-local conVarExplosiveSpeed      = GetConVar( "doorbreach_explosive_speed" )
-local conVarRespawnTime         = GetConVar( "doorbreach_respawntime" )
-local conVarDamageMin           = GetConVar( "doorbreach_damage_min" )
-local conVarDamageMax           = GetConVar( "doorbreach_damage_max" )
+local conVarEnabled             = GetConVar( BBD.CONVAR_ENABLED )
+local conVarHealth              = GetConVar( BBD.CONVAR_HEALTH )
+local conVarHealthRegenDelay    = GetConVar( BBD.CONVAR_HEALTH_REGEN_DELAY )
+local conVarHealthRegenRate     = GetConVar( BBD.CONVAR_HEALTH_REGEN_RATE )
+local conVarUnlock              = GetConVar( BBD.CONVAR_UNLOCK )
+local conVarBreakHinges         = GetConVar( BBD.CONVAR_BREAK_HINGES )
+local conVarHandleMultiplier    = GetConVar( BBD.CONVAR_HANDLE_MULTIPLIER )
+local conVarOpenSpeed           = GetConVar( BBD.CONVAR_SPEED )
+local conVarExplosiveSpeed      = GetConVar( BBD.CONVAR_EXPLOSIVE_SPEED )
+local conVarRespawnTime         = GetConVar( BBD.CONVAR_RESPAWNTIME )
+local conVarDamageMin           = GetConVar( BBD.CONVAR_DAMAGE_MIN )
+local conVarDamageMax           = GetConVar( BBD.CONVAR_DAMAGE_MAX )
 
 --#region Sound Functions
 
@@ -706,13 +706,13 @@ if BBD.Enable then hotloaded = true BBD.Disable() end
 -- Enable the door breach system
 BBD.Enable = function()
     -- Tracking door damage
-    hook.Add( "EntityTakeDamage", BBD_HOOK_DAMAGE_DETECTION, BBD.OnDoorDamaged )
+    hook.Add( "EntityTakeDamage", BBD.HOOK_DAMAGE_DETECTION, BBD.OnDoorDamaged )
 
     -- Check for player's colliding with respawning doors
-    hook.Add( "Think", BBD_HOOK_CHECK_COLLISIONS, BBD.CheckPlayerCollisions )
+    hook.Add( "Think", BBD.HOOK_CHECK_COLLISIONS, BBD.CheckPlayerCollisions )
 
     -- Don't allow players to use breached doors
-    hook.Add( "PlayerUse", BBD_HOOK_SUPPRESS_USE, BBD.OnDoorUsed )
+    hook.Add( "PlayerUse", BBD.HOOK_SUPPRESS_USE, BBD.OnDoorUsed )
 
     -- Update the max health of all doors when the ConVar changes
     cvars.AddChangeCallback( conVarHealth:GetName(), BBD.UpdateMaxHealths, BBD_CONVAR_CALLBACK_HEALTH )
@@ -726,11 +726,11 @@ end
 
 -- Disable the door breach system
 BBD.Disable = function()
-    hook.Remove( "EntityTakeDamage", BBD_HOOK_DAMAGE_DETECTION )
-    hook.Remove( "Think", BBD_HOOK_CHECK_COLLISIONS )
-    hook.Remove( "PlayerUse", BBD_HOOK_SUPPRESS_USE )
+    hook.Remove( "EntityTakeDamage", BBD.HOOK_DAMAGE_DETECTION )
+    hook.Remove( "Think", BBD.HOOK_CHECK_COLLISIONS )
+    hook.Remove( "PlayerUse", BBD.HOOK_SUPPRESS_USE )
 
-    cvars.RemoveChangeCallback( conVarHealth:GetName(), BBD_CONVAR_CALLBACK_HEALTH )
+    cvars.RemoveChangeCallback( conVarHealth:GetName(), BBD.CONVAR_CALLBACK_HEALTH )
 
     for _, door in pairs( ents.FindByClass( "prop_door_rotating" ) ) do
         door.PlayerUse = nil
@@ -738,7 +738,7 @@ BBD.Disable = function()
 end
 
 -- Enable the system when the map loads
-hook.Add( "InitPostEntity", BBD_HOOK_ENABLE, function()
+hook.Add( "InitPostEntity", BBD.HOOK_ENABLE, function()
     if conVarEnabled:GetBool() then BBD.Enable() end
 end )
 

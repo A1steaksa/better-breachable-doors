@@ -38,9 +38,9 @@ local breachedDoorRoll      = Angle( BBD.BreachedDoorRollAmount, 0, 0 )
 local damagedDoorAngle      = Angle( 0, 1, 0 )
 
 -- ConVars
-local conVarEnabled         = GetConVar( "doorbreach_enabled" )
-local conVarHealth          = GetConVar( "doorbreach_health" )
-local conVarRespawnTime     = GetConVar( "doorbreach_respawntime" )
+local conVarEnabled         = GetConVar( BBD.CONVAR_ENABLED )
+local conVarHealth          = GetConVar( BBD.CONVAR_HEALTH )
+local conVarRespawnTime     = GetConVar( BBD.CONVAR_RESPAWNTIME )
 
 --#region Rendering/Animation
 
@@ -341,10 +341,10 @@ if BBD.Disable then hotloaded = true BBD.Disable() end
 -- Enable the door breach system
 BBD.Enable = function()
     -- Attempt to animate doors entering the player's PVS
-    hook.Add( "NotifyShouldTransmit", BBD_HOOK_CHANGE_PVS, BBD.OnEntityEnteredPvs )
+    hook.Add( "NotifyShouldTransmit", BBD.HOOK_CHANGE_PVS, BBD.OnEntityEnteredPvs )
 
     -- Detect prop doors being removed
-    hook.Add( "EntityRemoved", BBD_HOOK_PROP_REMOVAL, BBD.OnEntityRemoved )
+    hook.Add( "EntityRemoved", BBD.HOOK_PROP_REMOVAL, BBD.OnEntityRemoved )
 
     -- Set up network callbacks for all doors
     for _, door in ipairs( ents.FindByClass( "prop_door_rotating" ) ) do
@@ -358,12 +358,12 @@ end
 
 -- Disable the door breach system
 BBD.Disable = function()
-    hook.Remove( "NotifyShouldTransmit", BBD_HOOK_CHANGE_PVS )
-    hook.Remove( "EntityRemoved", BBD_HOOK_PROP_REMOVAL )
+    hook.Remove( "NotifyShouldTransmit", BBD.HOOK_CHANGE_PVS )
+    hook.Remove( "EntityRemoved", BBD.HOOK_PROP_REMOVAL )
 end
 
 -- Enable the system when the map loads
-hook.Add( "InitPostEntity", BBD_HOOK_ENABLE, function()
+hook.Add( "InitPostEntity", BBD.HOOK_ENABLE, function()
     if conVarEnabled:GetBool() then BBD.Enable() end
 end )
 
