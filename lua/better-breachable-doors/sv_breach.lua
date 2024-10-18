@@ -315,7 +315,7 @@ BBD.RespawnDoor = function( door, isPropBreach )
     if not IsValid( door ) then return end
 
     -- Reset the door's rotation to its normal open position
-    local dirName = door:GetDamageDirection() == DOOR_DIRECTION_FORWARD and "m_angRotationOpenForward" or "m_angRotationOpenBack"
+    local dirName = door:GetDamageDirection() == BBD.OPEN_DIRECTION_FORWARD and "m_angRotationOpenForward" or "m_angRotationOpenBack"
     local resetRotation = door:GetInternalVariable( dirName )
     local resetAngle = Angle( resetRotation.x, resetRotation.y, resetRotation.z )
     if not IsValid( door:GetParent() ) then
@@ -544,20 +544,20 @@ end
 
 
 -- Determines the direction a door should open based on the damage force applied to it.
----@param door Entity Door to check
+---@param door BBD.Door Door to check
 ---@param dmg CTakeDamageInfo|Vector Damage dealt to the door, or the force of the damage as a vector
----@return DOOR_DIRECTION # The direction the door should open
+---@return BBD.OPEN_DIRECTION # The direction the door should open
 BBD.GetDoorOpenDirection = function( door, dmg )
     local damageForce = dmg
     if dmg.GetDamageForce then
         damageForce = dmg:GetDamageForce()
     end
 
-    return damageForce:Dot( door:GetForward() ) > 0 and DOOR_DIRECTION_FORWARD or DOOR_DIRECTION_BACKWARD
+    return damageForce:Dot( door:GetForward() ) > 0 and BBD.OPEN_DIRECTION_FORWARD or BBD.OPEN_DIRECTION_BACKWARD
 end
 
 -- Called when an entity takes damage while door breaching is enabled.
----@param door Entity Entity that took damage
+---@param door BBD.Door Entity that took damage
 ---@param dmg CTakeDamageInfo Damage dealt
 BBD.OnDoorDamaged = function( door, dmg )
     if not door or not IsValid( door ) then return end
