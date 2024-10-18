@@ -13,37 +13,19 @@ BBD.HandleHitboxRadius = 5
 -- How large prop door collisions should be scaled to when they're created
 BBD.PropCollisionScale = 0.95
 
----@alias DOOR_DIRECTION
----| `DOOR_DIRECTION_FORWARD`
----| `DOOR_DIRECTION_BACKWARD`
-DOOR_DIRECTION_FORWARD  = -1 -- Forward relative to the door's orientation.
-DOOR_DIRECTION_BACKWARD =  1 -- Backward relative to the door's orientation.
+--#endregion Constants
 
----@alias DOOR_STATE
----| `DOOR_STATE_CLOSED`
----| `DOOR_STATE_OPENING`
----| `DOOR_STATE_OPEN`
----| `DOOR_STATE_CLOSING`
----| `DOOR_STATE_AJAR`
-DOOR_STATE_CLOSED     = 0
-DOOR_STATE_OPENING    = 1
-DOOR_STATE_OPEN       = 2
-DOOR_STATE_CLOSING    = 3
-DOOR_STATE_AJAR       = 4
+--#region Enums
 
----@alias DOOR_FLAG
----| `DOOR_FLAG_START_OPEN`
----| `DOOR_FLAG_START_LOCKED`
----| `DOOR_FLAG_SILENT`
----| `DOOR_FLAG_USE_CLOSES`
----| `DOOR_FLAG_SILENT_NPC`
----| `DOOR_FLAG_IGNORE_USE`
-DOOR_FLAG_START_OPEN    = 1
-DOOR_FLAG_START_LOCKED  = 2048
-DOOR_FLAG_SILENT        = 4096
-DOOR_FLAG_USE_CLOSES    = 8192
-DOOR_FLAG_SILENT_NPC    = 16384
-DOOR_FLAG_IGNORE_USE    = 32768
+---@alias BBD.OPEN_DIRECTION
+---| `BBD.OPEN_DIRECTION_FORWARD`
+---| `BBD.OPEN_DIRECTION_BACKWARD`
+BBD.OPEN_DIRECTION_FORWARD  = -1 -- Forward relative to the door.
+BBD.OPEN_DIRECTION_BACKWARD =  1 -- Backward relative to the door.
+
+--#endregion Enums
+
+--#region ConVars, Hooks, and Callbacks
 
 -- Identifier Prefixes
 BBD.PREFIX_CONVAR   = "doorbreach_"

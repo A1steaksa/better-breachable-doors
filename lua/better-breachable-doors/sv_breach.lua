@@ -374,7 +374,7 @@ BBD.OpenBreachDoor = function( door, dmg )
     door:SetDamageDirection( openDirection )
 
     -- Get the door's normal open angle in the direction it's being pushed
-    local goalAng = door:GetInternalVariable( openDirection == DOOR_DIRECTION_FORWARD and "m_angRotationOpenForward" or "m_angRotationOpenBack" )
+    local goalAng = door:GetInternalVariable( openDirection == BBD.OPEN_DIRECTION_FORWARD and "m_angRotationOpenForward" or "m_angRotationOpenBack" )
 
     -- Modify the normal open angle to make the door look broken after it's opened
     goalAng = goalAng + Vector( 0,0, -BBD.BreachedDoorTiltAmount )
@@ -384,7 +384,7 @@ BBD.OpenBreachDoor = function( door, dmg )
 
     -- Silence the door's opening sound
     local previousSpawnFlags = door:GetSpawnFlags()
-    local silentFlags = bit.bor( previousSpawnFlags, DOOR_FLAG_SILENT )
+    local silentFlags = bit.bor( previousSpawnFlags, 4096 ) -- 4096 is DOOR_FLAG_SILENT
     door:SetKeyValue( "spawnflags", silentFlags )
 
     -- Open the door to set its MoveDone function
@@ -406,7 +406,7 @@ BBD.PropBreachDoor = function( door, dmg )
 
     -- Silence the door's opening sound
     local previousSpawnFlags = door:GetSpawnFlags()
-    local silentFlags = bit.bor( previousSpawnFlags, DOOR_FLAG_SILENT )
+    local silentFlags = bit.bor( previousSpawnFlags, 4096 ) -- 4096 is DOOR_FLAG_SILENT
     door:SetKeyValue( "spawnflags", silentFlags )
 
     -- Open the door to trigger area portals
@@ -583,7 +583,7 @@ BBD.OnDoorDamaged = function( door, dmg )
     if BBD.DoorHasConnections( door ) then
         -- Double doors don't take damage when open
         local doorState = door:GetInternalVariable( "m_eDoorState" )
-        if doorState == DOOR_STATE_OPEN then
+        if doorState == 2 then -- 2 corresponds to DOOR_STATE_OPEN
             return
         end
 
