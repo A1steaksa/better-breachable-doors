@@ -129,3 +129,5 @@ if CLIENT then
 
     include( "better-breachable-doors/cl_breach.lua" )
 end
+
+--#endregion ConVars, Hooks, and Callbacks
