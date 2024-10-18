@@ -25,7 +25,7 @@ local ANGLE_ZERO = Angle( 0, 0, 0 )
 
 -- ConVars
 local conVarEnabled             = GetConVar( BBD.CONVAR_ENABLED )
-local conVarHealth              = GetConVar( BBD.CONVAR_HEALTH )
+local conVarMaxHealth           = GetConVar( BBD.CONVAR_HEALTH_MAX )
 local conVarHealthRegenDelay    = GetConVar( BBD.CONVAR_HEALTH_REGEN_DELAY )
 local conVarHealthRegenRate     = GetConVar( BBD.CONVAR_HEALTH_REGEN_RATE )
 local conVarUnlock              = GetConVar( BBD.CONVAR_UNLOCK )
@@ -43,7 +43,7 @@ BBD.PlayDamageSound = function( door )
 
     local soundPos = door:GetPos() - door:OBBCenter()
 
-    local closenessToBreach = 1 - door:GetHealthAfterLastDamage() / conVarHealth:GetFloat()
+    local closenessToBreach = 1 - door:GetHealthAfterLastDamage() / conVarMaxHealth:GetFloat()
 
     -- Exaggerate the sound as the door gets closer to breaching
     closenessToBreach = math.pow( closenessToBreach, 2 )
@@ -636,7 +636,7 @@ BBD.OnDoorDamaged = function( door, dmg )
     local healthWithRegen = oldHealth
     if secondsSinceRegenStart > 0 then
         local healthToRegen = conVarHealthRegenRate:GetFloat() * secondsSinceRegenStart
-        healthWithRegen = math.min( oldHealth + healthToRegen, conVarHealth:GetFloat() )
+        healthWithRegen = math.min( oldHealth + healthToRegen, conVarMaxHealth:GetFloat() )
     end
 
     -- Apply damage
@@ -715,7 +715,7 @@ BBD.Enable = function()
     hook.Add( "PlayerUse", BBD.HOOK_SUPPRESS_USE, BBD.OnDoorUsed )
 
     -- Update the max health of all doors when the ConVar changes
-    cvars.AddChangeCallback( conVarHealth:GetName(), BBD.UpdateMaxHealths, BBD_CONVAR_CALLBACK_HEALTH )
+    cvars.AddChangeCallback( conVarMaxHealth:GetName(), BBD.UpdateMaxHealths, BBD.CONVAR_CALLBACK_HEALTH )
 
     -- Ensure all doors are marked as usable to DarkRP's prop protection system
     -- Otherwise, the PlayerUse hook will not be called
@@ -730,7 +730,7 @@ BBD.Disable = function()
     hook.Remove( "Think", BBD.HOOK_CHECK_COLLISIONS )
     hook.Remove( "PlayerUse", BBD.HOOK_SUPPRESS_USE )
 
-    cvars.RemoveChangeCallback( conVarHealth:GetName(), BBD.CONVAR_CALLBACK_HEALTH )
+    cvars.RemoveChangeCallback( conVarMaxHealth:GetName(), BBD.CONVAR_CALLBACK_HEALTH )
 
     for _, door in pairs( ents.FindByClass( "prop_door_rotating" ) ) do
         door.PlayerUse = nil

@@ -39,7 +39,7 @@ local damagedDoorAngle      = Angle( 0, 1, 0 )
 
 -- ConVars
 local conVarEnabled         = GetConVar( BBD.CONVAR_ENABLED )
-local conVarHealth          = GetConVar( BBD.CONVAR_HEALTH )
+local conVarMaxHealth       = GetConVar( BBD.CONVAR_HEALTH_MAX )
 local conVarRespawnTime     = GetConVar( BBD.CONVAR_RESPAWNTIME )
 
 --#region Rendering/Animation
@@ -136,7 +136,7 @@ BBD.AnimateDamagedDoor = function( door, animationProgress )
 
     if animationProgress < 1 then
 
-        local intensity = 1 - door:GetHealthAfterLastDamage() / conVarHealth:GetFloat()
+        local intensity = 1 - door:GetHealthAfterLastDamage() / conVarMaxHealth:GetFloat()
 
         -- Squaring the intensity makes the animation more exaggerated as the door gets closer to death
         local intensity = math.pow( intensity, 2 )

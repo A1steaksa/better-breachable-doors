@@ -34,7 +34,7 @@ BBD.PREFIX_CALLBACK = "A1_DoorBreach_"
 
 -- Convar Names
 BBD.CONVAR_ENABLED            = BBD.PREFIX_CONVAR .. "enabled"
-BBD.CONVAR_HEALTH             = BBD.PREFIX_CONVAR .. "health"
+BBD.CONVAR_HEALTH_MAX         = BBD.PREFIX_CONVAR .. "health_max"
 BBD.CONVAR_HEALTH_REGEN_DELAY = BBD.PREFIX_CONVAR .. "health_regen_delay"
 BBD.CONVAR_HEALTH_REGEN_RATE  = BBD.PREFIX_CONVAR .. "health_regen_rate"
 BBD.CONVAR_UNLOCK             = BBD.PREFIX_CONVAR .. "unlock"
@@ -48,7 +48,7 @@ BBD.CONVAR_DAMAGE_MAX         = BBD.PREFIX_CONVAR .. "damage_max"
 
 -- Convars
 CreateConVar( BBD.CONVAR_ENABLED,             "1",    {FCVAR_ARCHIVE,FCVAR_REPLICATED}, "Enable or disable the door breach system.", 0, 1 )
-CreateConVar( BBD.CONVAR_HEALTH,              "100",  {FCVAR_ARCHIVE,FCVAR_REPLICATED}, "Starting health for doors.", 1 )
+CreateConVar( BBD.CONVAR_HEALTH_MAX,          "100",  {FCVAR_ARCHIVE,FCVAR_REPLICATED}, "The maximum health for doors.", 1 )
 CreateConVar( BBD.CONVAR_HEALTH_REGEN_DELAY,  "5",    {FCVAR_ARCHIVE,FCVAR_REPLICATED}, "Time, in seconds, before a door starts regenerating health after being damaged.", 0 )
 CreateConVar( BBD.CONVAR_HEALTH_REGEN_RATE,   "10",   {FCVAR_ARCHIVE,FCVAR_REPLICATED}, "Rate, in health per second, at which doors regenerate health after being damaged.  Set to 0 to disable health regen.", 0 )
 CreateConVar( BBD.CONVAR_UNLOCK,              "1",    {FCVAR_ARCHIVE,FCVAR_REPLICATED}, "Set to 1 to unlock doors when breached.", 0, 1 )
@@ -78,7 +78,7 @@ hook.Add( "OnEntityCreated", BBD.HOOK_SETUP_DATATABLES, function( ent )
     ent:NetworkVar( "Entity",   "PropDoor" )
 
     if SERVER then
-        ent:SetHealthAfterLastDamage( GetConVar( BBD.CONVAR_HEALTH ):GetFloat() )
+        ent:SetHealthAfterLastDamage( GetConVar( BBD.CONVAR_HEALTH_MAX ):GetFloat() )
         ent:SetDamageTime( -1 )
     end
 
