@@ -92,7 +92,7 @@ hook.Add( "OnEntityCreated", BBD.HOOK_SETUP_DATATABLES, function( ent )
 
     ent:NetworkVar( "Float",    "DamageTime" )
     ent:NetworkVar( "Bool",     "IsHandleDamage" )
-    ent:NetworkVar( "Bool",     "IsPropBreachDoorRespawning" )
+    ent:NetworkVar( "Bool",     "IsDoorSolidifying" )
     ent:NetworkVar( "Int",      "DamageDirection" )
     ent:NetworkVar( "Float",    "HealthAfterLastDamage" )
     ent:NetworkVar( "Entity",   "PropDoor" )

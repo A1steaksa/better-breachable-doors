@@ -301,7 +301,7 @@ BBD.CheckPlayerCollisions = function()
         if #collidingPlayers <= 0 then
             door:SetCollisionGroup( COLLISION_GROUP_NONE )
             BBD.NonSolidDoors[ door ] = nil
-            door:SetIsPropBreachDoorRespawning( false )
+            door:SetIsDoorSolidifying( false )
 
             BBD.PlayRespawnSound( door )
         end
