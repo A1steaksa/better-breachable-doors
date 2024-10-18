@@ -1,6 +1,26 @@
 -- Shared global variable to store the Better Breachable Doors library.
 BBD = BBD or {}
 
+--#region Classes
+
+---@class BBD.Door : Entity
+---@field GetDamageTime fun( self: BBD.Door ): number Get the time, relative to CurTime, when the door was last damaged.
+---@field SetDamageTime fun( self: BBD.Door, time: number ) Set the time, relative to CurTime, when the door was last damaged.
+---@field GetIsHandleDamage fun( self: BBD.Door ): boolean Get whether the door's handle was damaged.
+---@field SetIsHandleDamage fun( self: BBD.Door, isHandleDamage: boolean ) Set whether the door's handle was damaged.
+---@field GetIsDoorSolidifying fun( self: BBD.Door ): boolean Get whether the door is in the process of respawning but is not yet able to be made solid due to a player being in the way.
+---@field SetIsDoorSolidifying fun( self: BBD.Door, isSolidifying: boolean ) Set whether the door is in the process of respawning but is not yet able to be made solid due to a player being in the way.
+---@field GetDamageDirection fun( self: BBD.Door ): number Get the direction of the damage dealt to the door.
+---@field SetDamageDirection fun( self: BBD.Door, direction: number ) Set the direction of the damage dealt to the door.
+---@field GetHealthAfterLastDamage fun( self: BBD.Door ): number Get the door's health after the last time it was damaged.
+---@field SetHealthAfterLastDamage fun( self: BBD.Door, health: number ) Set the door's health after the last time it was damaged.
+---@field GetPropDoor fun( self: BBD.Door ): Entity Get the prop door spawned when the door was breached.
+---@field SetPropDoor fun( self: BBD.Door, propDoor: Entity ) Set the prop door spawned when the door was breached.
+
+--#endregion Classes
+
+--#region Constants
+
 -- Amount, in degrees, to tilt the door forward when it's been breached
 BBD.BreachedDoorTiltAmount  = 1.5
 

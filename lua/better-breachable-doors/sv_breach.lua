@@ -39,6 +39,7 @@ local conVarDamageMax           = GetConVar( BBD.CONVAR_DAMAGE_MAX )
 
 --#region Sound Functions
 
+---@param door BBD.Door
 BBD.PlayDamageSound = function( door )
 
     local soundPos = door:GetPos() - door:OBBCenter()
@@ -65,6 +66,7 @@ BBD.PlayDamageSound = function( door )
     end
 end
 
+---@param door BBD.Door
 BBD.PlayRespawnSound = function( door )
     local soundPos = door:GetPos() - door:OBBCenter()
 
@@ -75,6 +77,7 @@ BBD.PlayRespawnSound = function( door )
     EmitSound( "items/ammocrate_close.wav", soundPos, nil, CHAN_AUTO, 1, 66 )
 end
 
+---@param door BBD.Door
 BBD.PlayBreachSound = function( door )
     local soundPos = door:GetPos() - door:OBBCenter()
 
@@ -93,7 +96,7 @@ end
 --#region Door Connection Functions
 
 -- Finds and returns a list of all doors that are connected to the given door and will open when it does.
----@param door Entity Door to check
+---@param door BBD.Door Door to check
 ---@return table<Entity>? # All doors that are connected to the given door, or `nil` if the door is invalid
 BBD.GetConnectedDoors = function ( door )
     if not IsValid( door ) then return end
@@ -128,7 +131,7 @@ end
 
 -- Returns whether or not the given door has any connected doors.
 -- Uses cached connections data if available.
----@param door Entity Door to check
+---@param door BBD.Door Door to check
 ---@return boolean # Whether or not the door has any connected doors
 BBD.DoorHasConnections = function( door )
     local connectedDoors = BBD.GetConnectedDoors( door )
@@ -249,7 +252,7 @@ end
 --#region Door Respawn Logic
 
 -- Determines if any Players are standing with any respawning door's space.
----@param door Entity Door to check for colliding players
+---@param door BBD.Door Door to check for colliding players
 ---@return table<Entity> # All players colliding with the door
 BBD.GetCollidingPlayers = function( door )
 
@@ -289,7 +292,7 @@ BBD.CheckPlayerCollisions = function()
     BBD.LastCollisionCheckTime = time
 
     for door, _ in pairs( BBD.NonSolidDoors ) do
-        ---@cast door Entity
+        ---@cast door BBD.Door
         if not IsValid( door ) then continue end
 
         local collidingPlayers = BBD.GetCollidingPlayers( door )
@@ -306,7 +309,7 @@ BBD.CheckPlayerCollisions = function()
 end
 
 -- Called when a door is respawned.
----@param door Entity Door that respawned
+---@param door BBD.Door Door that respawned
 ---@param isPropBreach boolean Whether or not the door was prop breached
 BBD.RespawnDoor = function( door, isPropBreach )
     if not IsValid( door ) then return end
@@ -365,7 +368,7 @@ end
 --#region Door Breach Logic
 
 -- Breaches a door by opening it violently
----@param door Entity Door to breach
+---@param door BBD.Door Door to breach
 ---@param dmg CTakeDamageInfo Damage that breached the door
 BBD.OpenBreachDoor = function( door, dmg )
 
@@ -400,7 +403,7 @@ BBD.OpenBreachDoor = function( door, dmg )
 end
 
 -- Breaches a door by replacing it with a prop door and throwing the prop door inward
----@param door Entity The door to replace with a prop door.
+---@param door BBD.Door The door to replace with a prop door.
 ---@param dmg CTakeDamageInfo Damage that killed the door.
 BBD.PropBreachDoor = function( door, dmg )
 
@@ -473,7 +476,7 @@ BBD.PropBreachDoor = function( door, dmg )
 end
 
 -- Called when a door has run out of health and is being breached.
----@param door Entity The door that was breached.
+---@param door BBD.Door The door that was breached.
 ---@param dmg CTakeDamageInfo Damage that killed the door.
 BBD.OnDoorBreached = function( door, dmg )
     if not door or not dmg or not IsValid( door ) or not IsValid( dmg ) then return end

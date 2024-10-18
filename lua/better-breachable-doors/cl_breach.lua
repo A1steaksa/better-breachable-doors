@@ -45,7 +45,7 @@ local conVarRespawnTime     = GetConVar( BBD.CONVAR_RESPAWNTIME )
 --#region Rendering/Animation
 
 -- Animate a door's broken handle and pushbar in response to being open-breached
----@param door Entity
+---@param door BBD.Door
 ---@param animationProgress number
 BBD.AnimateOpenBreachedHandle = function( door, animationProgress )
     animationProgress = math_min( animationProgress, 1 )
@@ -69,7 +69,7 @@ end
 
 
 -- Animate a door's handle and pushbar in response to being respawned
----@param door Entity
+---@param door BBD.Door
 ---@param animationProgress number
 BBD.AnimateRespawnedHandle = function( door, animationProgress )
     animationProgress = math_min( animationProgress, 1 )
@@ -94,7 +94,7 @@ end
 
 
 -- Animate a door's handle and pushbar in response to being damaged
----@param door Entity
+---@param door BBD.Door
 ---@param animationProgress number
 BBD.AnimateDamagedHandle = function( door, animationProgress )
     -- Animation progress is mirrored so the door pushes away from damage then returns
@@ -126,7 +126,7 @@ end
 
 
 -- Animate a door's reaction to damage
----@param door Entity
+---@param door BBD.Door
 ---@param animationProgress number
 BBD.AnimateDamagedDoor = function( door, animationProgress )
     -- Animation progress is mirrored so the door pushes away from damage then returns
@@ -148,7 +148,7 @@ end
 
 
 -- Animate a door's reaction to being open-breached
----@param door Entity
+---@param door BBD.Door
 ---@param animationProgress number
 BBD.AnimateOpenBreachedDoor = function( door, animationProgress )
     animationProgress = math_min( animationProgress, 1 )
@@ -165,7 +165,7 @@ end
 
 
 -- Animate a breached door's reaction to being respawned
----@param door Entity
+---@param door BBD.Door
 ---@param animationProgress number
 BBD.AnimateRespawnedDoor = function( door, animationProgress )
     animationProgress = math_min( animationProgress, 1 )
@@ -182,7 +182,7 @@ end
 
 
 -- Fully updates the door's animation(s) based on its current state.
----@param door Entity The door to animate
+---@param door BBD.Door The door to animate
 ---@param time number The current time
 ---@return boolean Whether the door is still animating
 BBD.UpdateAnimationState = function( door, time )
@@ -249,7 +249,7 @@ BBD.UpdateAnimationState = function( door, time )
 end
 
 -- This function replaces the door's draw function when it's being animated or respawned 
----@param self Entity
+---@param self BBD.Door
 ---@param flags number?
 BBD.DoorRenderOverride = function( self, flags )
     local isAnimating = BBD.UpdateAnimationState( self, CurTime() )
@@ -280,7 +280,7 @@ end
 
 
 -- Called when a door's health changes
----@param door Entity The door that changed health
+---@param door BBD.Door The door that changed health
 ---@param name string The name of the networked variable that changed
 ---@param oldHealth number The door's health before the change
 ---@param newHealth number The door's health after the change
@@ -290,7 +290,7 @@ end
 
 
 -- Called when a door's damage time changes
----@param door Entity The door that changed damage time
+---@param door BBD.Door The door that changed damage time
 ---@param name string The name of the networked variable that changed
 ---@param oldTime number The door's damage time before the change
 ---@param serverTime number The door's damage time after the change
@@ -299,6 +299,11 @@ BBD.DamageTimeChangedCallback = function( door, name, oldTime, serverTime )
 end
 
 
+-- Called when a prop door is spawned and assigned to a door
+---@param door BBD.Door
+---@param name string
+---@param oldProp Entity
+---@param newProp Entity
 BBD.PropDoorChangedCallback = function( door, name, oldProp, newProp )
     if IsValid( newProp ) and not IsValid( oldProp ) then
         door:SetNoDraw( true )
