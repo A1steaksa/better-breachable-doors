@@ -105,7 +105,7 @@ BBD.AnimateDamagedHandle = function( door, animationProgress )
 
     if animationProgress < 1 then
 
-        local intensity = 1 - door:GetHealthAfterLastDamage() / conVarHealth:GetFloat()
+        local intensity = 1 - door:GetHealthAfterLastDamage() / conVarMaxHealth:GetFloat()
 
         -- Squaring the intensity makes the animation more exaggerated as the door gets closer to death
         intensity = math.pow( intensity, 2 )
