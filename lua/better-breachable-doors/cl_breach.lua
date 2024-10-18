@@ -185,7 +185,7 @@ end
 ---@param door BBD.Door The door to animate
 ---@param time number The current time
 ---@return boolean Whether the door is still animating
-BBD.UpdateAnimationState = function( door, time )
+BBD.AnimateDoor = function( door, time )
     local isStillAnimating = false
 
     local health = door:GetHealthAfterLastDamage()
@@ -252,7 +252,7 @@ end
 ---@param self BBD.Door
 ---@param flags number?
 BBD.DoorRenderOverride = function( self, flags )
-    local isAnimating = BBD.UpdateAnimationState( self, CurTime() )
+    local isAnimating = BBD.AnimateDoor( self, CurTime() )
     local isRespawning = self:GetIsPropBreachDoorRespawning()
 
     -- Respawning doors are drawn to be partially transparent
