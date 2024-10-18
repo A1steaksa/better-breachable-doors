@@ -337,7 +337,7 @@ BBD.RespawnDoor = function( door, isPropBreach )
     door:RemoveAllDecals()
 
     -- Reset the door's health to the max health
-    door:SetHealthAfterLastDamage( conVarHealth:GetFloat() )
+    door:SetHealthAfterLastDamage( conVarMaxHealth:GetFloat() )
 
     if isPropBreach then
         local propDoor = door:GetPropDoor()
