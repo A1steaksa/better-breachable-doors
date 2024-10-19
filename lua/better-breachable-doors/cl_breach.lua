@@ -335,7 +335,7 @@ BBD.HealthChangedCallback = function( door, name, oldHealth, newHealth )
     BBD.PreviousDoorHealth[door] = oldHealth
 
     -- If the door respawned, it needs to animate
-    if oldHealth == 0 and newHealth == conVarMaxHealth:GetFloat() then
+    if oldHealth <= 0 and newHealth >= conVarMaxHealth:GetFloat() then
         door.RenderOverride = BBD.DoorRenderOverride
     end
 end
