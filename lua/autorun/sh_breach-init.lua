@@ -16,6 +16,7 @@ BBD = BBD or {}
 ---@field SetHealthAfterLastDamage fun( self: BBD.Door, health: number ) Set the door's health after the last time it was damaged.
 ---@field GetPropDoor fun( self: BBD.Door ): Entity Get the prop door spawned when the door was breached.
 ---@field SetPropDoor fun( self: BBD.Door, propDoor: Entity ) Set the prop door spawned when the door was breached.
+---@field RenderOverride fun( self: BBD.Door, flags: number ) Override for rendering the door.  This function is called every frame until the door is done animating.
 
 --#endregion Classes
 
