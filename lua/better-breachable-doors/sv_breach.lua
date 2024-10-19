@@ -348,7 +348,7 @@ BBD.RespawnDoor = function( door, isPropBreach )
         if #BBD.GetCollidingPlayers( door ) > 0 then
             -- Make the door non-solid to avoid trapping the player
             door:SetCollisionGroup( COLLISION_GROUP_PASSABLE_DOOR )
-            door:SetIsPropBreachDoorRespawning( true )
+            door:SetIsDoorSolidifying( true )
 
             -- Start checking to see if the player leaves the door's space
             BBD.NonSolidDoors[ door ] = true
@@ -580,7 +580,7 @@ BBD.OnDoorDamaged = function( door, dmg )
     if oldHealth <= 0 then return end
 
     -- Don't damage doors that haven't yet become solid
-    if door:GetIsPropBreachDoorRespawning() then return end
+    if door:GetIsDoorSolidifying() then return end
 
     -- Double doors
     if BBD.DoorHasConnections( door ) then
@@ -592,7 +592,7 @@ BBD.OnDoorDamaged = function( door, dmg )
 
         -- Double doors don't take damage when any connected door is non-solid
         for _, otherDoor in pairs( BBD.GetConnectedDoors( door ) ) do
-            if otherDoor:GetIsPropBreachDoorRespawning() then return end
+            if otherDoor:GetIsDoorSolidifying() then return end
         end
     end
 
