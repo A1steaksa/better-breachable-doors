@@ -42,9 +42,11 @@ local breachedDoorRoll      = Angle( BBD.BreachedDoorRollAmount, 0, 0 )
 local damagedDoorAngle      = Angle( 0, 1, 0 )
 
 -- ConVars
-local conVarEnabled         = GetConVar( BBD.CONVAR_ENABLED )
-local conVarMaxHealth       = GetConVar( BBD.CONVAR_HEALTH_MAX )
-local conVarRespawnTime     = GetConVar( BBD.CONVAR_RESPAWNTIME )
+local conVarEnabled             = GetConVar( BBD.CONVAR_ENABLED )
+local conVarMaxHealth           = GetConVar( BBD.CONVAR_HEALTH_MAX )
+local conVarRespawnTime         = GetConVar( BBD.CONVAR_RESPAWNTIME )
+local conVarHealthRegenDelay    = GetConVar( BBD.CONVAR_HEALTH_REGEN_DELAY )
+local conVarHealthRegenRate     = GetConVar( BBD.CONVAR_HEALTH_REGEN_RATE )
 
 --#region Rendering/Animation
 
@@ -192,24 +194,28 @@ end
 BBD.AnimateDoor = function( door, time )
     local isStillAnimating = false
 
-    local health = door:GetHealthAfterLastDamage()
-    local healthDelta = health - ( BBD.PreviousDoorHealth[door] or 0 )
     local damageTime = door:GetDamageTime()
     local timeSinceDamage = time - damageTime
+
+    local healthBefore = BBD.CalculateDoorHealth( BBD.PreviousDoorHealth[door] or conVarMaxHealth:GetFloat(), BBD.PreviousDamageTime[door] or 0, damageTime )
+    local healthAfter = door:GetHealthAfterLastDamage()
+    local healthDelta = healthAfter - healthBefore
 
     -- Negative time means CurTime() is behind the server's time
     -- In this case, don't stop animating the door, but don't animate it either
     if timeSinceDamage < 0 then return true end
 
     -- If the door hasn't taken damage recently, don't animate it
-    if damageTime <= 0 or timeSinceDamage > 30 then
+    if damageTime <= 0 then
         return false
     end
 
     local doorTookDamage = healthDelta < 0
     if doorTookDamage then
+
         -- Door damage animation
         local doorDamageAnimationProgress = timeSinceDamage / doorDamageAnimationDuration
+
         BBD.AnimateDamagedDoor( door, doorDamageAnimationProgress )
         isStillAnimating = isStillAnimating or ( doorDamageAnimationProgress < 1 )
 
@@ -221,7 +227,7 @@ BBD.AnimateDoor = function( door, time )
         end
 
         -- Door breaching animations
-        local isDoorBreached = health <= 0
+        local isDoorBreached = healthAfter <= 0
         if isDoorBreached then
             -- Door handle breach animation
             local handleAnimationProgress = timeSinceDamage / handleBreachAnimationDuration
@@ -257,7 +263,7 @@ end
 ---@param flags number?
 BBD.DoorRenderOverride = function( self, flags )
     local isAnimating = BBD.AnimateDoor( self, CurTime() )
-    local isRespawning = self:GetIsPropBreachDoorRespawning()
+    local isRespawning = self:GetIsDoorSolidifying()
 
     -- Respawning doors are drawn to be partially transparent
     if isRespawning then
@@ -282,6 +288,48 @@ end
 
 --#endregion Rendering/Animation
 
+--#region Utility Functions
+
+-- Calculate the expected health of a door based on a hypothetical state.
+---@param health number # The door's health at the time of the damage event
+---@param damageTime number # The time the door was damaged
+---@param checkTime number # The time to check the door's health at
+---@return number # The door's predicted or expected health at the given time
+BBD.CalculateDoorHealth = function( health, damageTime, checkTime )
+    local secondsSinceDamage = checkTime - damageTime
+
+    -- If the door is dead
+    if health <= 0 then
+        -- Hasn't respawned
+        if secondsSinceDamage < conVarRespawnTime:GetFloat() then
+            return 0
+        else -- Has respawned
+            return conVarMaxHealth:GetFloat()
+        end
+    end
+
+    -- We're behind the server's time, so health regen is impossible
+    if damageTime > checkTime then
+        return health
+    end
+
+    local healthRegenDelay = conVarHealthRegenDelay:GetFloat()
+
+    -- If the door was damaged recently, don't regen health
+    if secondsSinceDamage < healthRegenDelay then
+        return health
+    end
+
+    -- Can't have negative seconds of regen
+    local secondsOfRegen = math.max( secondsSinceDamage - healthRegenDelay, 0 )
+
+    -- Regen health up to the max health
+    return math.min( health + secondsOfRegen * conVarHealthRegenRate:GetFloat(), conVarMaxHealth:GetFloat() )
+end
+
+--#endregion Utility Functions
+
+--#region Network Callbacks
 
 -- Called when a door's health changes
 ---@param door BBD.Door The door that changed health
@@ -290,6 +338,11 @@ end
 ---@param newHealth number The door's health after the change
 BBD.HealthChangedCallback = function( door, name, oldHealth, newHealth )
     BBD.PreviousDoorHealth[door] = oldHealth
+
+    -- If the door respawned, it needs to animate
+    if oldHealth == 0 and newHealth == conVarMaxHealth:GetFloat() then
+        door.RenderOverride = BBD.DoorRenderOverride
+    end
 end
 
 
@@ -325,6 +378,7 @@ BBD.OnEntityEnteredPvs = function( ent, shouldTransmit )
     if not ent or not IsValid( ent ) then return end
     if ent:GetClass() ~= "prop_door_rotating" then return end
     if not shouldTransmit then return end
+    ---@cast ent BBD.Door
 
     -- As doors enter the PVS, mark them for animation
     -- If they don't actually need to animate, they will be quickly removed from the list
@@ -345,6 +399,8 @@ BBD.OnEntityRemoved = function( ent, fullUpdate  )
         BBD.PropDoors[ent] = nil
     end
 end
+
+--#endregion Network Callbacks
 
 local hotloaded = false
 if BBD.Disable then hotloaded = true BBD.Disable() end
