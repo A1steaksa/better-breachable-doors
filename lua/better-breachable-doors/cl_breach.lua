@@ -205,11 +205,6 @@ BBD.AnimateDoor = function( door, time )
     -- In this case, don't stop animating the door, but don't animate it either
     if timeSinceDamage < 0 then return true end
 
-    -- If the door hasn't taken damage recently, don't animate it
-    if damageTime <= 0 then
-        return false
-    end
-
     local doorTookDamage = healthDelta < 0
     if doorTookDamage then
 
