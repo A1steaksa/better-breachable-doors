@@ -660,6 +660,8 @@ end
 
 --#endregion Door Damage Logic
 
+--#region Callbacks
+
 BBD.UpdateMaxHealths = function( _, oldMaxHealth, newMaxHealth )
     for _, door in pairs( ents.FindByClass( "prop_door_rotating" ) ) do
         if not IsValid( door ) then continue end
@@ -700,6 +702,8 @@ BBD.OnDoorUsed = function( ply, door )
                 return false
             end
         end
+
+--#endregion Callbacks
     end
 end
 
