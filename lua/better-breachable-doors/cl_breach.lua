@@ -4,6 +4,10 @@ if BBD.Disable then BBD.Disable() end
 ---@type table<Entity, number>
 BBD.PreviousDoorHealth = BBD.PreviousDoorHealth or {}
 
+-- When each door was previously damaged
+---@type table<Entity, number>
+BBD.PreviousDamageTime = BBD.PreviousDamageTime or {}
+
 -- A map of prop doors and their corresponding door entities
 -- This is necessary because the callback for prop doors is inconsistent when removing the prop
 -- So we're checking for the entity removed event and checking this table to see if it was a prop door
@@ -295,6 +299,8 @@ end
 ---@param oldTime number The door's damage time before the change
 ---@param serverTime number The door's damage time after the change
 BBD.DamageTimeChangedCallback = function( door, name, oldTime, serverTime )
+    BBD.PreviousDamageTime[door] = oldTime
+
     door.RenderOverride = BBD.DoorRenderOverride
 end
 
