@@ -1,5 +1,3 @@
-if BBD.Disable then BBD.Disable() end
-
 -- How much health each door had before the last damage event
 ---@type table<Entity, number>
 BBD.PreviousDoorHealth = BBD.PreviousDoorHealth or {}
@@ -324,7 +322,7 @@ end
 
 --#endregion Utility Functions
 
---#region Network Callbacks
+--#region Callbacks
 
 -- Called when a door's health changes
 ---@param door BBD.Door The door that changed health
@@ -395,7 +393,7 @@ BBD.OnEntityRemoved = function( ent, fullUpdate  )
     end
 end
 
---#endregion Network Callbacks
+--#endregion Callbacks
 
 local hotloaded = false
 if BBD.Disable then hotloaded = true BBD.Disable() end
