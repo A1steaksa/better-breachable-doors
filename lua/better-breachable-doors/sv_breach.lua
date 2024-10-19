@@ -702,10 +702,10 @@ BBD.OnDoorUsed = function( ply, door )
                 return false
             end
         end
-
---#endregion Callbacks
     end
 end
+
+--#endregion Callbacks
 
 local hotloaded = false
 if BBD.Enable then hotloaded = true BBD.Disable() end
