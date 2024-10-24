@@ -68,18 +68,19 @@ BBD.CONVAR_DAMAGE_MIN         = BBD.PREFIX_CONVAR .. "damage_min"
 BBD.CONVAR_DAMAGE_MAX         = BBD.PREFIX_CONVAR .. "damage_max"
 
 -- Convars
-CreateConVar( BBD.CONVAR_ENABLED,             "1",    {FCVAR_ARCHIVE,FCVAR_REPLICATED}, "Enable or disable the door breach system.", 0, 1 )
-CreateConVar( BBD.CONVAR_HEALTH_MAX,          "100",  {FCVAR_ARCHIVE,FCVAR_REPLICATED}, "The maximum health for doors.", 1 )
-CreateConVar( BBD.CONVAR_HEALTH_REGEN_DELAY,  "5",    {FCVAR_ARCHIVE,FCVAR_REPLICATED}, "Time, in seconds, before a door starts regenerating health after being damaged.", 0 )
-CreateConVar( BBD.CONVAR_HEALTH_REGEN_RATE,   "10",   {FCVAR_ARCHIVE,FCVAR_REPLICATED}, "Rate, in health per second, at which doors regenerate health after being damaged.  Set to 0 to disable health regen.", 0 )
-CreateConVar( BBD.CONVAR_UNLOCK,              "1",    {FCVAR_ARCHIVE,FCVAR_REPLICATED}, "Set to 1 to unlock doors when breached.", 0, 1 )
-CreateConVar( BBD.CONVAR_BREAK_HINGES,        "1",    {FCVAR_ARCHIVE,FCVAR_REPLICATED}, "Set to 1 to break doors off of their hinges and turn them into a physics prop when breached, or set to 0 to instead violently force doors to open.", 0, 1 )
-CreateConVar( BBD.CONVAR_HANDLE_MULTIPLIER,   "1.5",  {FCVAR_ARCHIVE,FCVAR_REPLICATED}, "Multiplier for damage dealt to a door's handle.", 0 )
-CreateConVar( BBD.CONVAR_SPEED,               "500",  {FCVAR_ARCHIVE,FCVAR_REPLICATED}, "Speed, in degrees per second, at which doors open when breached by bullets or impacts.", 0 )
-CreateConVar( BBD.CONVAR_EXPLOSIVE_SPEED,     "1000", {FCVAR_ARCHIVE,FCVAR_REPLICATED}, "Speed, in degrees per second, at which doors open when breached by explosives.", 0 )
-CreateConVar( BBD.CONVAR_RESPAWNTIME,         "30",   {FCVAR_ARCHIVE,FCVAR_REPLICATED}, "Time, in seconds, before the prop door is removed.", 0 )
-CreateConVar( BBD.CONVAR_DAMAGE_MIN,          "0",    {FCVAR_ARCHIVE,FCVAR_REPLICATED}, "Any damage dealt below this amount will be ignored. Set to 0 to disable.", 0 )
-CreateConVar( BBD.CONVAR_DAMAGE_MAX,          "0",    {FCVAR_ARCHIVE,FCVAR_REPLICATED}, "All damage dealt will be capped at this maximum amount.  Set to 0 to disable.", 0 )
+local flags = {FCVAR_ARCHIVE,FCVAR_REPLICATED}
+CreateConVar( BBD.CONVAR_ENABLED,             "1",    flags, "Enable or disable the door breach system.", 0, 1 )
+CreateConVar( BBD.CONVAR_HEALTH_MAX,          "100",  flags, "The maximum health for doors.", 1 )
+CreateConVar( BBD.CONVAR_HEALTH_REGEN_DELAY,  "5",    flags, "Time, in seconds, before a door starts regenerating health after being damaged.", 0 )
+CreateConVar( BBD.CONVAR_HEALTH_REGEN_RATE,   "10",   flags, "Rate, in health per second, at which doors regenerate health after being damaged.  Set to 0 to disable health regen.", 0 )
+CreateConVar( BBD.CONVAR_UNLOCK,              "1",    flags, "Set to 1 to unlock doors when breached.", 0, 1 )
+CreateConVar( BBD.CONVAR_BREAK_HINGES,        "1",    flags, "Set to 1 to break doors off of their hinges and turn them into a physics prop when breached, or set to 0 to instead violently force doors to open.", 0, 1 )
+CreateConVar( BBD.CONVAR_HANDLE_MULTIPLIER,   "1.5",  flags, "Multiplier for damage dealt to a door's handle.", 0 )
+CreateConVar( BBD.CONVAR_SPEED,               "500",  flags, "Speed, in degrees per second, at which doors open when breached by bullets or impacts.", 0 )
+CreateConVar( BBD.CONVAR_EXPLOSIVE_SPEED,     "1000", flags, "Speed, in degrees per second, at which doors open when breached by explosives.", 0 )
+CreateConVar( BBD.CONVAR_RESPAWNTIME,         "30",   flags, "Time, in seconds, before the prop door is removed.", 0 )
+CreateConVar( BBD.CONVAR_DAMAGE_MIN,          "0",    flags, "Any damage dealt below this amount will be ignored. Set to 0 to disable.", 0 )
+CreateConVar( BBD.CONVAR_DAMAGE_MAX,          "0",    flags, "All damage dealt will be capped at this maximum amount.  Set to 0 to disable.", 0 )
 
 -- Hook IDs
 BBD.HOOK_SETUP_DATATABLES     = BBD.PREFIX_HOOK .. "SetupDataTables"
