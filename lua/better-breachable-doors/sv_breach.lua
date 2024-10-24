@@ -128,7 +128,7 @@ end
 ---@param door BBD.Door Door to check
 ---@return table<BBD.Door> # All doors that are connected to the given door, or `nil` if the door is invalid
 BBD.GetConnectedDoors = function ( door )
-    if not IsValid( door ) then return end
+    if not IsValid( door ) then return {} end
 
     -- Check the cache first
     if BBD.ConnectedDoors[ door ] then return BBD.ConnectedDoors[ door ] end
