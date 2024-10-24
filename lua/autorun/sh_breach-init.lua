@@ -1,5 +1,5 @@
 -- Shared global variable to store the Better Breachable Doors library.
-BBD = BBD or {}
+BBD = _G.BBD or {}
 
 --#region Classes
 
