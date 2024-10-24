@@ -5,9 +5,11 @@ local BBD = _G.BBD
 BBD.ConnectedDoors = BBD.ConnectedDoors or {}
 
 -- The SOLID_ enum value for doors before they are prop breached
+---@type table<BBD.Door, SOLID>
 BBD.PreBreachSolidity = BBD.PreBreachSolidity or {}
 
 -- Doors that have respawned but are not yet solid because a Player is standing in them
+---@type table<BBD.Door, boolean>
 BBD.NonSolidDoors = BBD.NonSolidDoors or  {}
 
 -- The PhysCollide objects for doors that have been prop breached
