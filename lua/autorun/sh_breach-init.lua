@@ -10,8 +10,8 @@ BBD = _G.BBD or {}
 ---@field SetIsHandleDamage fun( self: BBD.Door, isHandleDamage: boolean ) Set whether the door's handle was damaged.
 ---@field GetIsDoorSolidifying fun( self: BBD.Door ): boolean Get whether the door is in the process of respawning but is not yet able to be made solid due to a player being in the way.
 ---@field SetIsDoorSolidifying fun( self: BBD.Door, isSolidifying: boolean ) Set whether the door is in the process of respawning but is not yet able to be made solid due to a player being in the way.
----@field GetDamageDirection fun( self: BBD.Door ): number Get the direction of the damage dealt to the door.
----@field SetDamageDirection fun( self: BBD.Door, direction: number ) Set the direction of the damage dealt to the door.
+---@field GetDamageDirection fun( self: BBD.Door ): BBD.OPEN_DIRECTION Get the direction of the damage dealt to the door.
+---@field SetDamageDirection fun( self: BBD.Door, direction: BBD.OPEN_DIRECTION ) Set the direction of the damage dealt to the door.
 ---@field GetHealthAfterLastDamage fun( self: BBD.Door ): number Get the door's health after the last time it was damaged.
 ---@field SetHealthAfterLastDamage fun( self: BBD.Door, health: number ) Set the door's health after the last time it was damaged.
 ---@field GetPropDoor fun( self: BBD.Door ): Entity Get the prop door spawned when the door was breached.

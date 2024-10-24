@@ -1,7 +1,7 @@
 local BBD = _G.BBD
 
 -- Cache table for all the doors that are logically connected to a given door
----@type table<Entity, table<Entity>>
+---@type table<BBD.Door, table<BBD.Door>>
 BBD.ConnectedDoors = BBD.ConnectedDoors or {}
 
 -- The SOLID_ enum value for doors before they are prop breached
@@ -124,13 +124,14 @@ end
 
 -- Finds and returns a list of all doors that are connected to the given door and will open when it does.
 ---@param door BBD.Door Door to check
----@return table<Entity>? # All doors that are connected to the given door, or `nil` if the door is invalid
+---@return table<BBD.Door> # All doors that are connected to the given door, or `nil` if the door is invalid
 BBD.GetConnectedDoors = function ( door )
     if not IsValid( door ) then return end
 
     -- Check the cache first
     if BBD.ConnectedDoors[ door ] then return BBD.ConnectedDoors[ door ] end
 
+    ---@type table<BBD.Door>
     local result = {}
 
     local doorName = string_trim( door:GetName() )
@@ -280,9 +281,8 @@ end
 
 -- Determines if any Players are standing with any respawning door's space.
 ---@param door BBD.Door Door to check for colliding players
----@return table<Entity> # All players colliding with the door
+---@return table<Player> # All players colliding with the door
 BBD.GetCollidingPlayers = function( door )
-
     local mdl = door:GetModel()
     if not BBD.DoorPhysCollides[ mdl ] then
         BBD.DoorPhysCollides[ mdl ] = CreatePhysCollideBox( door:GetCollisionBounds() )
@@ -310,8 +310,9 @@ BBD.GetCollidingPlayers = function( door )
     return collidingPlayers
 end
 
--- Called regularly to check if any player is colliding with any door that is respawning.
-BBD.CheckPlayerCollisions = function()
+-- Checks all non-solid doors to see if any players are colliding with them and makes them solid if not.
+-- This is called semi-frequently.
+BBD.AttemptToSolidifyDoors = function()
     local time = CurTime()
 
     -- Don't check too often
@@ -319,7 +320,6 @@ BBD.CheckPlayerCollisions = function()
     BBD.LastCollisionCheckTime = time
 
     for door, _ in pairs( BBD.NonSolidDoors ) do
-        ---@cast door BBD.Door
         if not IsValid( door ) then continue end
 
         local collidingPlayers = BBD.GetCollidingPlayers( door )
@@ -398,7 +398,6 @@ end
 ---@param door BBD.Door Door to breach
 ---@param dmg CTakeDamageInfo Damage that breached the door
 BBD.OpenBreachDoor = function( door, dmg )
-
     -- Figure out which direction the damage is pushing the door
     local openDirection = BBD.GetDoorOpenDirection( door, dmg )
     door:SetDamageDirection( openDirection )
@@ -433,7 +432,6 @@ end
 ---@param door BBD.Door The door to replace with a prop door.
 ---@param dmg CTakeDamageInfo Damage that killed the door.
 BBD.PropBreachDoor = function( door, dmg )
-
     -- Silence the door's opening sound
     local previousSpawnFlags = door:GetSpawnFlags()
     local silentFlags = bit_bor( previousSpawnFlags, 4096 ) -- 4096 is DOOR_FLAG_SILENT
