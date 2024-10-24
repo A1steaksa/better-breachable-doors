@@ -1,23 +1,41 @@
+local BBD = _G.BBD
+
 -- How much health each door had before the last damage event
----@type table<Entity, number>
+---@type table<BBD.Door, number>
 BBD.PreviousDoorHealth = BBD.PreviousDoorHealth or {}
 
 -- When each door was previously damaged
----@type table<Entity, number>
+---@type table<BBD.Door, number>
 BBD.PreviousDamageTime = BBD.PreviousDamageTime or {}
 
 -- A map of prop doors and their corresponding door entities
 -- This is necessary because the callback for prop doors is inconsistent when removing the prop
 -- So we're checking for the entity removed event and checking this table to see if it was a prop door
+---@type table<Entity, BBD.Door>
 BBD.PropDoors = BBD.PropDoors or {}
-
--- Localized Functions
-local ease_outElastic = math.ease.OutElastic
-local lerpAngle = LerpAngle
-local math_min = math.min
 
 -- Constants
 local ANGLE_ZERO = Angle( 0, 0, 0 )
+
+-- Localized Global Functions
+local Angle = Angle
+local IsValid = IsValid
+local GetConVar = GetConVar
+local CurTime = CurTime
+local ipairs = ipairs
+local lerpAngle = LerpAngle
+
+-- Localized Library Functions
+local ents_FindByClass = ents.FindByClass
+local hook_Add = hook.Add
+local hook_Remove = hook.Remove
+local math_min = math.min
+local math_max = math.max
+local math_abs = math.abs
+local math_pow = math.pow
+local math_ease_outElastic = math.ease.OutElastic
+local render_OverrideColorWriteEnable = render.OverrideColorWriteEnable
+local render_SetBlend = render.SetBlend
 
 -- Local variables because they're used each frame during animations
 local handleDamageAnimationDuration = 0.1
@@ -57,8 +75,8 @@ BBD.AnimateOpenBreachedHandle = function( door, animationProgress )
     local handleAngle = breachedHandleAngle
     local pushbarAngle = breachedPushbarAngle
     if animationProgress < 1 then
-        handleAngle = lerpAngle( ease_outElastic( animationProgress ), ANGLE_ZERO, breachedHandleAngle )
-        pushbarAngle = lerpAngle( ease_outElastic( animationProgress ), ANGLE_ZERO, breachedPushbarAngle )
+        handleAngle = lerpAngle( math_ease_outElastic( animationProgress ), ANGLE_ZERO, breachedHandleAngle )
+        pushbarAngle = lerpAngle( math_ease_outElastic( animationProgress ), ANGLE_ZERO, breachedPushbarAngle )
     end
 
     local handleBone = door:LookupBone( "handle" )
@@ -82,8 +100,8 @@ BBD.AnimateRespawnedHandle = function( door, animationProgress )
     local pushbarAngle = ANGLE_ZERO
 
     if animationProgress < 1 then
-        handleAngle = lerpAngle( ease_outElastic( animationProgress ), breachedHandleAngle, ANGLE_ZERO )
-        pushbarAngle = lerpAngle( ease_outElastic( animationProgress ), breachedPushbarAngle, ANGLE_ZERO )
+        handleAngle = lerpAngle( math_ease_outElastic( animationProgress ), breachedHandleAngle, ANGLE_ZERO )
+        pushbarAngle = lerpAngle( math_ease_outElastic( animationProgress ), breachedPushbarAngle, ANGLE_ZERO )
     end
 
     local handleBone = door:LookupBone( "handle" )
@@ -102,7 +120,7 @@ end
 ---@param animationProgress number
 BBD.AnimateDamagedHandle = function( door, animationProgress )
     -- Animation progress is mirrored so the door pushes away from damage then returns
-    local adjustedProgress = math.abs( math_min( animationProgress, 1 ) - 0.5 ) * -2 + 1
+    local adjustedProgress = math_abs( math_min( animationProgress, 1 ) - 0.5 ) * -2 + 1
 
     local handleAngle = ANGLE_ZERO
     local pushbarAngle = ANGLE_ZERO
@@ -112,7 +130,7 @@ BBD.AnimateDamagedHandle = function( door, animationProgress )
         local intensity = 1 - door:GetHealthAfterLastDamage() / conVarMaxHealth:GetFloat()
 
         -- Squaring the intensity makes the animation more exaggerated as the door gets closer to death
-        intensity = math.pow( intensity, 2 )
+        intensity = math_pow( intensity, 2 )
 
         handleAngle = lerpAngle( adjustedProgress, ANGLE_ZERO, damagedHandleAngle * intensity )
         pushbarAngle = lerpAngle( adjustedProgress, ANGLE_ZERO, damagedPushbarAngle * intensity )
@@ -134,7 +152,7 @@ end
 ---@param animationProgress number
 BBD.AnimateDamagedDoor = function( door, animationProgress )
     -- Animation progress is mirrored so the door pushes away from damage then returns
-    local adjustedProgress = math.abs( math_min( animationProgress, 1 ) - 0.5 ) * -2 + 1
+    local adjustedProgress = math_abs( math_min( animationProgress, 1 ) - 0.5 ) * -2 + 1
 
     door:SetRenderAngles( nil )
 
@@ -143,9 +161,9 @@ BBD.AnimateDamagedDoor = function( door, animationProgress )
         local intensity = 1 - door:GetHealthAfterLastDamage() / conVarMaxHealth:GetFloat()
 
         -- Squaring the intensity makes the animation more exaggerated as the door gets closer to death
-        local intensity = math.pow( intensity, 2 )
+        local intensity = math_pow( intensity, 2 )
 
-        local doorAngleOffset = lerpAngle( ease_outElastic( adjustedProgress ), ANGLE_ZERO, door:GetDamageDirection() * damagedDoorAngle * intensity )
+        local doorAngleOffset = lerpAngle( math_ease_outElastic( adjustedProgress ), ANGLE_ZERO, door:GetDamageDirection() * damagedDoorAngle * intensity )
         door:SetRenderAngles( door:GetAngles() + doorAngleOffset )
     end
 end
@@ -160,7 +178,7 @@ BBD.AnimateOpenBreachedDoor = function( door, animationProgress )
     local doorAngleOffset = breachedDoorTilt + breachedDoorRoll * -door:GetDamageDirection()
 
     if animationProgress < 1 then
-        doorAngleOffset = lerpAngle( ease_outElastic( animationProgress ), ANGLE_ZERO, doorAngleOffset )
+        doorAngleOffset = lerpAngle( math_ease_outElastic( animationProgress ), ANGLE_ZERO, doorAngleOffset )
     end
 
     door:SetRenderAngles( nil )
@@ -179,7 +197,7 @@ BBD.AnimateRespawnedDoor = function( door, animationProgress )
     if animationProgress < 1 then
         local doorAngleOffset = breachedDoorTilt + breachedDoorRoll * -door:GetDamageDirection()
 
-        local doorAngleOffset = lerpAngle( ease_outElastic( animationProgress ), doorAngleOffset, ANGLE_ZERO )
+        local doorAngleOffset = lerpAngle( math_ease_outElastic( animationProgress ), doorAngleOffset, ANGLE_ZERO )
         door:SetRenderAngles( door:GetAngles() + doorAngleOffset )
     end
 end
@@ -188,7 +206,7 @@ end
 -- Fully updates the door's animation(s) based on its current state.
 ---@param door BBD.Door The door to animate
 ---@param time number The current time
----@return boolean Whether the door is still animating
+---@return boolean # Whether the door is still animating
 BBD.AnimateDoor = function( door, time )
     local isStillAnimating = false
 
@@ -261,14 +279,14 @@ BBD.DoorRenderOverride = function( self, flags )
     -- Respawning doors are drawn to be partially transparent
     if isRespawning then
         -- Write to the depth buffer, but not the color buffer
-        render.OverrideColorWriteEnable( true, false )
+        render_OverrideColorWriteEnable( true, false )
         self:DrawModel( flags )
-        render.OverrideColorWriteEnable( false, false )
+        render_OverrideColorWriteEnable( false, false )
 
         -- Write to the color buffer using the newly set depth buffer values
-        render.SetBlend( 0.75 )
+        render_SetBlend( 0.75 )
         self:DrawModel( flags )
-        render.SetBlend( 1 )
+        render_SetBlend( 1 )
     else
         -- Draw the door normally
         self:DrawModel( flags )
@@ -314,10 +332,10 @@ BBD.CalculateDoorHealth = function( health, damageTime, checkTime )
     end
 
     -- Can't have negative seconds of regen
-    local secondsOfRegen = math.max( secondsSinceDamage - healthRegenDelay, 0 )
+    local secondsOfRegen = math_max( secondsSinceDamage - healthRegenDelay, 0 )
 
     -- Regen health up to the max health
-    return math.min( health + secondsOfRegen * conVarHealthRegenRate:GetFloat(), conVarMaxHealth:GetFloat() )
+    return math_min( health + secondsOfRegen * conVarHealthRegenRate:GetFloat(), conVarMaxHealth:GetFloat() )
 end
 
 --#endregion Utility Functions
@@ -365,25 +383,26 @@ BBD.PropDoorChangedCallback = function( door, name, oldProp, newProp )
     end
 end
 
----@param ent Entity
+
+---@param door BBD.Door
 ---@param shouldTransmit boolean
-BBD.OnEntityEnteredPvs = function( ent, shouldTransmit )
-    if not ent or not IsValid( ent ) then return end
-    if ent:GetClass() ~= "prop_door_rotating" then return end
+BBD.OnEntityEnteredPvs = function( door, shouldTransmit )
     if not shouldTransmit then return end
-    ---@cast ent BBD.Door
+    if not door or not IsValid( door ) then return end
+    if door:GetClass() ~= "prop_door_rotating" then return end
 
     -- As doors enter the PVS, mark them for animation
     -- If they don't actually need to animate, they will be quickly removed from the list
-    ent.RenderOverride = BBD.DoorRenderOverride
+    door.RenderOverride = BBD.DoorRenderOverride
 end
+
 
 ---@param ent Entity
 ---@param fullUpdate boolean 
 BBD.OnEntityRemoved = function( ent, fullUpdate  )
+    if fullUpdate then return end
     if not ent or not IsValid( ent ) then return end
     if ent:GetClass() ~= "prop_physics" then return end
-    if fullUpdate then return end
 
     -- If this was a prop door being removed, start drawing the corresponding door again
     local door = BBD.PropDoors[ent]
@@ -401,13 +420,13 @@ if BBD.Disable then hotloaded = true BBD.Disable() end
 -- Enable the door breach system
 BBD.Enable = function()
     -- Attempt to animate doors entering the player's PVS
-    hook.Add( "NotifyShouldTransmit", BBD.HOOK_CHANGE_PVS, BBD.OnEntityEnteredPvs )
+    hook_Add( "NotifyShouldTransmit", BBD.HOOK_CHANGE_PVS, BBD.OnEntityEnteredPvs )
 
     -- Detect prop doors being removed
-    hook.Add( "EntityRemoved", BBD.HOOK_PROP_REMOVAL, BBD.OnEntityRemoved )
+    hook_Add( "EntityRemoved", BBD.HOOK_PROP_REMOVAL, BBD.OnEntityRemoved )
 
     -- Set up network callbacks for all doors
-    for _, door in ipairs( ents.FindByClass( "prop_door_rotating" ) ) do
+    for _, door in ipairs( ents_FindByClass( "prop_door_rotating" ) ) do
         ---@cast door Entity
 
         door:NetworkVarNotify( "HealthAfterLastDamage", BBD.HealthChangedCallback )
@@ -418,12 +437,12 @@ end
 
 -- Disable the door breach system
 BBD.Disable = function()
-    hook.Remove( "NotifyShouldTransmit", BBD.HOOK_CHANGE_PVS )
-    hook.Remove( "EntityRemoved", BBD.HOOK_PROP_REMOVAL )
+    hook_Remove( "NotifyShouldTransmit", BBD.HOOK_CHANGE_PVS )
+    hook_Remove( "EntityRemoved", BBD.HOOK_PROP_REMOVAL )
 end
 
 -- Enable the system when the map loads
-hook.Add( "InitPostEntity", BBD.HOOK_ENABLE, function()
+hook_Add( "InitPostEntity", BBD.HOOK_ENABLE, function()
     if conVarEnabled:GetBool() then BBD.Enable() end
 end )
 

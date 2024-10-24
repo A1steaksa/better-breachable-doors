@@ -1,3 +1,5 @@
+local BBD = _G.BBD
+
 -- Cache table for all the doors that are logically connected to a given door
 ---@type table<Entity, table<Entity>>
 BBD.ConnectedDoors = BBD.ConnectedDoors or {}
@@ -23,6 +25,31 @@ BBD.CollisionCheckInterval = 0.5
 -- Constants
 local ANGLE_ZERO = Angle( 0, 0, 0 )
 
+-- Localized Global Functions
+local Angle = Angle
+local Vector = Vector
+local isvector = isvector
+local IsValid = IsValid
+local tonumber = tonumber
+local GetConVar = GetConVar
+local CurTime = CurTime
+local CreatePhysCollideBox = CreatePhysCollideBox
+local EmitSound = EmitSound
+local pairs = pairs
+
+-- Localized Library Functions
+local ents_FindByClass = ents.FindByClass
+local math_min = math.min
+local math_pow = math.pow
+local table_RemoveByValue = table.RemoveByValue
+local string_trim = string.Trim
+local timer_Simple = timer.Simple
+local hook_Add = hook.Add
+local hook_Remove = hook.Remove
+local player_Iterator = player.Iterator
+local bit_bor = bit.bor
+local ents_Create = ents.Create
+
 -- ConVars
 local conVarEnabled             = GetConVar( BBD.CONVAR_ENABLED )
 local conVarMaxHealth           = GetConVar( BBD.CONVAR_HEALTH_MAX )
@@ -47,7 +74,7 @@ BBD.PlayDamageSound = function( door )
     local closenessToBreach = 1 - door:GetHealthAfterLastDamage() / conVarMaxHealth:GetFloat()
 
     -- Exaggerate the sound as the door gets closer to breaching
-    closenessToBreach = math.pow( closenessToBreach, 2 )
+    closenessToBreach = math_pow( closenessToBreach, 2 )
 
     local pitch = 100 + ( closenessToBreach * 50 )
 
@@ -106,13 +133,13 @@ BBD.GetConnectedDoors = function ( door )
 
     local result = {}
 
-    local doorName = string.Trim( door:GetName() )
+    local doorName = string_trim( door:GetName() )
     if doorName ~= "" then
-        for _, otherDoor in pairs( ents.FindByClass( "prop_door_rotating" ) ) do
+        for _, otherDoor in pairs( ents_FindByClass( "prop_door_rotating" ) ) do
             if not IsValid( otherDoor ) then continue end
 
             -- Look for another door with the same name
-            local otherDoorName = string.Trim( otherDoor:GetName() )
+            local otherDoorName = string_trim( otherDoor:GetName() )
             local doorsHaveSameName = otherDoorName ~= "" and otherDoorName == doorName and otherDoor ~= door
             local doorsHaveSlaveNameConnection = otherDoor:GetInternalVariable( "slavename" ) == doorName
 
@@ -123,7 +150,7 @@ BBD.GetConnectedDoors = function ( door )
     end
 
     -- Remove the original door from the list
-    table.RemoveByValue( result, door )
+    table_RemoveByValue( result, door )
 
     BBD.ConnectedDoors[ door ] = result
     return result
@@ -268,7 +295,7 @@ BBD.GetCollidingPlayers = function( door )
     local doorAngles = door:GetAngles()
 
     -- Check if any players are standing in the door's space
-    for _, ply in player.Iterator() do
+    for _, ply in player_Iterator() do
         if not IsValid( ply ) then continue end
 
         local plyPos = ply:GetPos()
@@ -387,7 +414,7 @@ BBD.OpenBreachDoor = function( door, dmg )
 
     -- Silence the door's opening sound
     local previousSpawnFlags = door:GetSpawnFlags()
-    local silentFlags = bit.bor( previousSpawnFlags, 4096 ) -- 4096 is DOOR_FLAG_SILENT
+    local silentFlags = bit_bor( previousSpawnFlags, 4096 ) -- 4096 is DOOR_FLAG_SILENT
     door:SetKeyValue( "spawnflags", silentFlags )
 
     -- Open the door to set its MoveDone function
@@ -409,7 +436,7 @@ BBD.PropBreachDoor = function( door, dmg )
 
     -- Silence the door's opening sound
     local previousSpawnFlags = door:GetSpawnFlags()
-    local silentFlags = bit.bor( previousSpawnFlags, 4096 ) -- 4096 is DOOR_FLAG_SILENT
+    local silentFlags = bit_bor( previousSpawnFlags, 4096 ) -- 4096 is DOOR_FLAG_SILENT
     door:SetKeyValue( "spawnflags", silentFlags )
 
     -- Open the door to trigger area portals
@@ -420,13 +447,13 @@ BBD.PropBreachDoor = function( door, dmg )
 
     door:SetSolid( SOLID_NONE )
 
-    local prop = ents.Create( "prop_physics" )
+    local prop = ents_Create( "prop_physics" )
     prop:SetModel( door:GetModel() )
     prop:SetPos( door:GetPos() )
     prop:SetAngles( door:GetAngles() )
 
     -- Done in a timer because props don't exist on the client until the next tick
-    timer.Simple( 0, function() door:SetPropDoor( prop ) end )
+    timer_Simple( 0, function() door:SetPropDoor( prop ) end )
 
     -- Copy the Body Group values from the door to the prop
     for i = 0, door:GetNumBodyGroups() - 1 do
@@ -527,7 +554,7 @@ BBD.OnDoorBreached = function( door, dmg )
     end
 
     -- Door respawn timer
-    timer.Simple( conVarRespawnTime:GetFloat(), function()
+    timer_Simple( conVarRespawnTime:GetFloat(), function()
         BBD.RespawnDoor( door, isPropBreach )
 
         if BBD.DoorHasConnections( door ) then
@@ -571,7 +598,7 @@ BBD.OnDoorDamaged = function( door, dmg )
     -- Cap damage at the maximum threshold
     local maxDamage = conVarDamageMax:GetFloat()
     if maxDamage > 0 then
-        damageToTake = math.min( damageToTake, maxDamage )
+        damageToTake = math_min( damageToTake, maxDamage )
     end
 
     local oldHealth = door:GetHealthAfterLastDamage()
@@ -639,7 +666,7 @@ BBD.OnDoorDamaged = function( door, dmg )
     local healthWithRegen = oldHealth
     if secondsSinceRegenStart > 0 then
         local healthToRegen = conVarHealthRegenRate:GetFloat() * secondsSinceRegenStart
-        healthWithRegen = math.min( oldHealth + healthToRegen, conVarMaxHealth:GetFloat() )
+        healthWithRegen = math_min( oldHealth + healthToRegen, conVarMaxHealth:GetFloat() )
     end
 
     -- Apply damage
@@ -663,7 +690,7 @@ end
 --#region Callbacks
 
 BBD.UpdateMaxHealths = function( _, oldMaxHealth, newMaxHealth )
-    for _, door in pairs( ents.FindByClass( "prop_door_rotating" ) ) do
+    for _, door in pairs( ents_FindByClass( "prop_door_rotating" ) ) do
         if not IsValid( door ) then continue end
 
         local oldHealth = door:GetHealthAfterLastDamage()
@@ -678,7 +705,7 @@ BBD.UpdateMaxHealths = function( _, oldMaxHealth, newMaxHealth )
         end
 
         -- Don't let doors have more health than the new max
-        newHealth = math.min( newHealth, tonumber( newMaxHealth ) )
+        newHealth = math_min( newHealth, tonumber( newMaxHealth ) )
 
         door:SetHealthAfterLastDamage( newHealth )
     end
@@ -713,33 +740,33 @@ if BBD.Enable then hotloaded = true BBD.Disable() end
 -- Enable the door breach system
 BBD.Enable = function()
     -- Tracking door damage
-    hook.Add( "EntityTakeDamage", BBD.HOOK_DAMAGE_DETECTION, BBD.OnDoorDamaged )
+    hook_Add( "EntityTakeDamage", BBD.HOOK_DAMAGE_DETECTION, BBD.OnDoorDamaged )
 
     -- Check for player's colliding with respawning doors
-    hook.Add( "Think", BBD.HOOK_CHECK_COLLISIONS, BBD.CheckPlayerCollisions )
+    hook_Add( "Think", BBD.HOOK_CHECK_COLLISIONS, BBD.AttemptToSolidifyDoors )
 
     -- Don't allow players to use breached doors
-    hook.Add( "PlayerUse", BBD.HOOK_SUPPRESS_USE, BBD.OnDoorUsed )
+    hook_Add( "PlayerUse", BBD.HOOK_SUPPRESS_USE, BBD.OnDoorUsed )
 
     -- Update the max health of all doors when the ConVar changes
     cvars.AddChangeCallback( conVarMaxHealth:GetName(), BBD.UpdateMaxHealths, BBD.CONVAR_CALLBACK_HEALTH )
 
     -- Ensure all doors are marked as usable to DarkRP's prop protection system
     -- Otherwise, the PlayerUse hook will not be called
-    for _, door in pairs( ents.FindByClass( "prop_door_rotating" ) ) do
+    for _, door in pairs( ents_FindByClass( "prop_door_rotating" ) ) do
         door.PlayerUse = true
     end
 end
 
 -- Disable the door breach system
 BBD.Disable = function()
-    hook.Remove( "EntityTakeDamage", BBD.HOOK_DAMAGE_DETECTION )
-    hook.Remove( "Think", BBD.HOOK_CHECK_COLLISIONS )
-    hook.Remove( "PlayerUse", BBD.HOOK_SUPPRESS_USE )
+    hook_Remove( "EntityTakeDamage", BBD.HOOK_DAMAGE_DETECTION )
+    hook_Remove( "Think", BBD.HOOK_CHECK_COLLISIONS )
+    hook_Remove( "PlayerUse", BBD.HOOK_SUPPRESS_USE )
 
     cvars.RemoveChangeCallback( conVarMaxHealth:GetName(), BBD.CONVAR_CALLBACK_HEALTH )
 
-    for _, door in pairs( ents.FindByClass( "prop_door_rotating" ) ) do
+    for _, door in pairs( ents_FindByClass( "prop_door_rotating" ) ) do
         door.PlayerUse = nil
     end
 end
